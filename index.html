@@ -829,7 +829,7 @@ async function boot(){
   db.doc("config/orbes").onSnapshot(s=>{orbCfg={...DEFAULT_ORB,...(s.exists?s.data():{})};if(view==="home")renderHome();if(view==="admin"&&adminPane==="ob"&&!$("#orbSet").contains(document.activeElement)&&!$("#lotRows").contains(document.activeElement))fillOrb()},()=>{});
   db.doc("config/sons").onSnapshot(s=>{sonsCfg={...DEFAULT_SONS,...(s.exists?s.data():{})};if(view==="admin"&&adminPane==="so"&&!$("#sonsSet").contains(document.activeElement))fillSons()},()=>{});
   db.collection("sounds").onSnapshot(s=>{sounds=s.docs.map(d=>({id:d.id,...d.data()}));if(view==="admin")renderSonsTable()},()=>{});
-  if(isAdmin&&C&&C.auth){db.collection("accounts").onSnapshot(s=>{accounts=s.docs.map(d=>({id:d.id,...d.data()}));if(view==="admin")renderOrphans()},()=>{});
+  if(isAdmin&&C&&C.auth){db.collection("accounts").onSnapshot(s=>{accounts=s.docs.map(d=>({id:d.id,...d.data()}));if(view==="admin")renderRows()},()=>{});
     if(window.__rulesMissing)setTimeout(()=>toast("Règles Firestore manquantes : publie firestore.rules dans Firebase"),1500);
     canGrant=true;db.collection("admins").onSnapshot(s=>{admins=new Set(s.docs.map(d=>d.id));if(view==="admin")renderRows()},()=>{})}
   if(isAdmin)db.collection("registrations").onSnapshot(s=>{regs={};s.docs.forEach(d=>regs[d.id]=d.data());if(view==="admin")renderAdmin()},()=>{});
@@ -1728,7 +1728,7 @@ function renderHead(){
   $("#aHead").innerHTML=`<th data-k="pseudo">Pseudo</th><th data-k="ville">Ville</th><th data-k="email">Email</th><th data-k="createdAt">Inscrit</th><th class="n" data-k="games">Parties</th>${MODES.map(m=>`<th class="n" data-k="${KEY[m.id]}Pts" title="${m.name}">${m.short}</th>`).join("")}<th data-k="lastAt">Dernière</th><th>Statut</th><th>Actions</th>`;
   $("#aHead").querySelectorAll("th[data-k]").forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(sortK===k)sortDir*=-1;else{sortK=k;sortDir=["pseudo","ville","email"].includes(k)?1:-1}renderRows()});
 }
-function rowsData(){return players.map(p=>({...p,email:(regs[p.id]||{}).email||"",newsletter:!!(regs[p.id]||{}).newsletter,isBanned:banned(p.id),isAdm:admins.has(p.id)}))}
+function rowsData(){return players.map(p=>({...p,email:(regs[p.id]||{}).email||((accounts.find(x=>x.id===p.id)||{}).email)||"",newsletter:!!(regs[p.id]||{}).newsletter,isBanned:banned(p.id),isAdm:admins.has(p.id)}))}
 const bestTxt=(p,m)=>p[KEY[m]]?`${p[KEY[m]]}/${m==="son"?(p.bestSonMax||"?"):MAXS[m]}`:"–";
 function renderAdmin(){
   setSw($("#sOpen"),cfg.open);setSw($("#sRec"),cfg.rec!==false);

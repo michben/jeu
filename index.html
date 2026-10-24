@@ -392,7 +392,7 @@ td.ps{font:500 15px/1.1 var(--display);color:var(--ink);text-transform:uppercase
 .feed{list-style:none;margin:0;padding:0;font:400 12px/1.4 var(--mono);color:var(--muted)}
 .feed li{display:grid;grid-template-columns:1fr auto;gap:8px;padding:7px 0;border-bottom:1px solid var(--track)}
 .feed li b{color:var(--ink);font-weight:400}
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--gold);color:var(--bg);font:400 12px/1 var(--mono);letter-spacing:.1em;padding:11px 14px;z-index:20;text-transform:uppercase}
+.toast{max-width:calc(100% - 32px);text-align:center;line-height:1.4;position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--gold);color:var(--bg);font:400 12px/1 var(--mono);letter-spacing:.1em;padding:11px 14px;z-index:20;text-transform:uppercase}
 .foot{display:flex;justify-content:space-between;font:400 10px/1 var(--mono);color:var(--dim);letter-spacing:.2em;text-transform:uppercase;padding-top:10px}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
 @media (max-height:680px){.reg .cover{display:none}}
@@ -432,6 +432,18 @@ body{background:radial-gradient(120% 70% at 50% 0%,#1a1710 0%,var(--bg) 60%) fix
 .timer span{border-radius:3px}
 .lb li .p{font-weight:500}
 #rings{opacity:.6}
+/* REC + home */
+.chip.rec{display:inline-flex;align-items:center;gap:6px}
+.chip.rec .dot{width:8px;height:8px;border-radius:50%;background:var(--bad);display:inline-block}
+.chip.rec.on{border-color:var(--bad);color:var(--ink);background:rgba(224,122,95,.12)}
+.chip.rec.on .dot{animation:recp 1s ease-in-out infinite}
+@keyframes recp{50%{opacity:.25}}
+.chip.arm{border-color:var(--bad);color:var(--bad)}
+.modal{position:fixed;inset:0;z-index:40;background:rgba(8,7,5,.82);display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.mbox{width:100%;max-width:460px;max-height:100%;overflow:auto;background:linear-gradient(180deg,#1c1a13,var(--panel));border:1px solid var(--rule2);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.mbox h2{margin:0;font-family:var(--black);font-weight:900;font-size:28px;text-transform:uppercase;paint-order:stroke fill;-webkit-text-stroke:.08em var(--edge)}
+.mbox video{width:100%;max-height:50vh;background:#000;border-radius:6px}
+.mbox ol{margin:0;padding-left:18px;font:400 12px/1.6 var(--mono);color:var(--muted)}
 </style>
 
 <canvas id="rings" aria-hidden="true"></canvas>
@@ -439,6 +451,8 @@ body{background:radial-gradient(120% 70% at 50% 0%,#1a1710 0%,var(--bg) 60%) fix
   <div class="top">
     <span class="eyebrow">Edalam</span>
     <div class="topr">
+      <button class="chip" id="homeChip" type="button" hidden>← Accueil</button>
+      <button class="chip rec" id="recBtn" type="button" aria-pressed="false" hidden><i class="dot"></i>Rec</button>
       <button class="chip" id="adminBtn" type="button" hidden>Admin</button>
       <button class="chip" id="radioBtn" type="button" hidden>Radio</button>
       <button class="chip" id="profBtn" type="button" hidden>Profil</button>
@@ -589,6 +603,7 @@ body{background:radial-gradient(120% 70% at 50% 0%,#1a1710 0%,var(--bg) 60%) fix
         <div class="panel">
           <h2>Ouverture du jeu</h2>
           <div class="tog"><span>Jeu ouvert<small>Fermé : seuls les admins jouent</small></span><button class="switch" role="switch" id="sOpen" aria-checked="true" type="button" aria-label="Jeu ouvert"></button></div>
+          <div class="tog"><span>Bouton Rec<small>Les joueurs peuvent filmer leur partie</small></span><button class="switch" role="switch" id="sRec" aria-checked="true" type="button" aria-label="Bouton Rec"></button></div>
           <div id="sModes" class="modesw"></div>
         </div>
         <div style="display:flex;flex-direction:column;gap:18px;min-width:0">
@@ -667,6 +682,7 @@ body{background:radial-gradient(120% 70% at 50% 0%,#1a1710 0%,var(--bg) 60%) fix
   <div class="foot"><span>Concentré</span><span id="ftr">Défis</span></div>
 </div>
 <div class="toast" id="toast" hidden></div>
+<div class="modal" id="recModal" hidden role="dialog" aria-modal="true" aria-labelledby="recTitle"><div class="mbox" id="recBox"></div></div>
 
 <script>
 (function(){
@@ -726,7 +742,9 @@ let timers=[],raf=0;
 const later=(fn,ms)=>{const id=setTimeout(fn,ms);timers.push(id);return id};
 const clearAll=()=>{timers.forEach(clearTimeout);timers=[];cancelAnimationFrame(raf);document.onkeydown=null};
 function show(id){view=id;VIEWS.forEach(x=>$("#"+x).hidden=x!==id);document.body.classList.toggle("admin",id==="admin");
-  $("#profBtn").hidden=!(me&&(id==="home"));$("#radioBtn").hidden=!(me&&(id==="home"||id==="profile"));$("#adminBtn").hidden=!(isAdmin&&id!=="admin"&&id!=="game");if(id!=="game"&&typeof stopBuf==="function")stopBuf();$("#ftr").textContent=id==="game"?"Reste concentré":id==="admin"?"Console":"Défis"}
+  $("#profBtn").hidden=!(me&&(id==="home"));$("#radioBtn").hidden=!(me&&(id==="home"||id==="profile"));$("#adminBtn").hidden=!(isAdmin&&id!=="admin"&&id!=="game");
+  $("#homeChip").hidden=!(me&&["game","end","profile","radio","admin"].includes(id));$("#homeChip").classList.remove("arm");$("#homeChip").textContent="← Accueil";
+  $("#recBtn").hidden=!(me&&cfg.rec!==false&&["home","game","end"].includes(id))&&!(typeof rec!=="undefined"&&rec);if(id!=="game"&&typeof stopBuf==="function")stopBuf();$("#ftr").textContent=id==="game"?"Reste concentré":id==="admin"?"Console":"Défis"}
 function gate(title,text,btn,fn){clearAll();$("#gateTitle").textContent=title;$("#gateText").textContent=text;const b=$("#gateBtn");b.hidden=!btn;if(btn){b.textContent=btn;b.onclick=fn}show("gate")}
 const isAdminRoute=()=>location.hash==="#admin";
 const banned=id=>(cfg.banned||[]).includes(id);
@@ -1449,7 +1467,7 @@ $("#homeBtn").onclick=()=>{clearAll();stopBuf();show("home");route()};
 
 /* =================== ADMIN =================== */
 let sortK="createdAt",sortDir=-1,armed=null,admins=new Set(),canGrant=false;
-function cfgDoc(next){const o={open:next.open,modes:next.modes,announcement:next.announcement||"",banned:next.banned||[],sfx:next.sfx||DEFAULT_CFG.sfx};if(Array.isArray(next.radio))o.radio=next.radio;return o}
+function cfgDoc(next){const o={open:next.open,modes:next.modes,announcement:next.announcement||"",banned:next.banned||[],sfx:next.sfx||DEFAULT_CFG.sfx,rec:next.rec!==false};if(Array.isArray(next.radio))o.radio=next.radio;return o}
 async function writeCfg(patch){
   const next={...cfg,...patch,modes:{...cfg.modes,...(patch.modes||{})},sfx:{...cfg.sfx,...(patch.sfx||{})}};
   try{await db.doc("config/game").set(cfgDoc(next));toast("Enregistré");return true}
@@ -1464,6 +1482,7 @@ function fillSettings(){
   fillSons();
 }
 $("#sOpen").onclick=()=>writeCfg({open:!cfg.open});
+$("#sRec").onclick=()=>writeCfg({rec:cfg.rec===false});
 $("#sModes").onclick=e=>{const b=e.target.closest(".switch[data-c]");if(b)writeCfg({modes:{[b.dataset.c]:cfg.modes[b.dataset.c]===false}})};
 $("#sSave").onclick=async()=>{if(await writeCfg({announcement:$("#sAnn").value.trim()}))$("#sState").textContent="Annonce publiée"};
 $("#xVol").oninput=()=>{$("#xVolV").textContent=Math.round($("#xVol").value*100)+" %"};
@@ -1487,7 +1506,7 @@ function renderHead(){
 function rowsData(){return players.map(p=>({...p,email:(regs[p.id]||{}).email||"",newsletter:!!(regs[p.id]||{}).newsletter,isBanned:banned(p.id),isAdm:admins.has(p.id)}))}
 const bestTxt=(p,m)=>p[KEY[m]]?`${p[KEY[m]]}/${m==="son"?(p.bestSonMax||"?"):MAXS[m]}`:"–";
 function renderAdmin(){
-  setSw($("#sOpen"),cfg.open);
+  setSw($("#sOpen"),cfg.open);setSw($("#sRec"),cfg.rec!==false);
   $("#sModes").innerHTML=MODES.map(m=>`<div class="tog"><span>${m.name}</span><button class="switch" role="switch" data-c="${m.cfg}" aria-checked="${cfg.modes[m.cfg]!==false}" type="button" aria-label="Mode ${m.name}"></button></div>`).join("");
   const ps=players,week=Date.now()-7*864e5,sumGames=ps.reduce((a,p)=>a+(p.games||0),0);
   const byMode={};ps.forEach(p=>{const g=p.gamesBy||{};MODES.forEach(m=>byMode[m.id]=(byMode[m.id]||0)+(g[m.id]||0))});
@@ -1643,6 +1662,61 @@ async function seedSounds(){
 }
 $("#seedBtn").onclick=seedSounds;
 fetch("seed/sounds.json",{method:"HEAD"}).then(r=>{if(r.ok)$("#seedRow").hidden=false}).catch(()=>{});
+/* =================== Accueil & enregistrement =================== */
+$("#homeChip").onclick=()=>{
+  const b=$("#homeChip");
+  if(view==="admin"){location.hash="";return}
+  if(view==="game"&&!b.classList.contains("arm")){b.classList.add("arm");b.textContent="Quitter la partie ?";clearTimeout(b._t);b._t=setTimeout(()=>{b.classList.remove("arm");b.textContent="← Accueil"},3000);return}
+  clearAll();stopBuf();show("home");route();
+};
+let rec=null;
+const recBtn=$("#recBtn");
+const inFrame=()=>{try{return window.self!==window.top}catch(e){return true}};
+const recOk=()=>!!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia&&window.MediaRecorder)&&!inFrame();
+function modal(html){const m=$("#recModal");$("#recBox").innerHTML=html;m.hidden=false;const c=m.querySelector("[data-close]");if(c){c.onclick=closeModal;c.focus({preventScroll:true})}}
+function closeModal(){const m=$("#recModal");const v=m.querySelector("video");if(v&&v.src)URL.revokeObjectURL(v.src);m.hidden=true;$("#recBox").innerHTML=""}
+$("#recModal").onclick=e=>{if(e.target.id==="recModal")closeModal()};
+function recHelp(){
+  modal(`<h2 id="recTitle">Filmer ta partie</h2>
+   <p class="lede">${inFrame()?"Dans cette version du jeu, la page ne peut pas filmer l'écran.":"Ton navigateur ne permet pas de filmer la page."} Utilise l'enregistrement d'écran de ton appareil :</p>
+   <ol><li><b>iPhone / iPad</b> : Centre de contrôle → bouton Enregistrement de l'écran.</li><li><b>Android</b> : volet des réglages rapides → Enregistreur d'écran.</li><li><b>Ordinateur</b> : ouvre le jeu dans Chrome, Edge ou Firefox, puis touche Rec.</li></ol>
+   <button class="ghost" type="button" data-close>J'ai compris</button>`);
+}
+async function recStart(){
+  if(!recOk()){recHelp();return}
+  let stream;
+  try{stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30},audio:true,preferCurrentTab:true,selfBrowserSurface:"include",systemAudio:"include",surfaceSwitching:"exclude"})}
+  catch(e){if(e&&e.name==="NotAllowedError")toast("Enregistrement annulé");else recHelp();return}
+  const types=["video/mp4;codecs=avc1,mp4a.40.2","video/mp4","video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"];
+  const type=types.find(t=>{try{return MediaRecorder.isTypeSupported(t)}catch(e){return false}})||"";
+  let mr;try{mr=new MediaRecorder(stream,type?{mimeType:type,videoBitsPerSecond:5e6}:undefined)}catch(e){stream.getTracks().forEach(t=>t.stop());recHelp();return}
+  const chunks=[];
+  mr.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+  mr.onstop=()=>{stream.getTracks().forEach(t=>t.stop());const blob=new Blob(chunks,{type:(mr.mimeType||"video/webm").split(";")[0]});const dur=rec?Math.round((Date.now()-rec.t0)/1000):0;recUI(false);rec=null;show(view);recShow(blob,dur)};
+  stream.getVideoTracks()[0].addEventListener("ended",()=>{if(mr.state!=="inactive")mr.stop()});
+  mr.start(1000);
+  rec={mr,t0:Date.now(),timer:setInterval(recTick,500),max:setTimeout(recStop,5*60000)};recUI(true);recTick();
+  if(!stream.getAudioTracks().length)toast("Vidéo sans le son : coche « Partager l'audio » la prochaine fois");else toast("Enregistrement en cours");
+}
+function recStop(){if(!rec)return;clearInterval(rec.timer);clearTimeout(rec.max);if(rec.mr.state!=="inactive")rec.mr.stop()}
+function recTick(){if(!rec)return;const s=Math.floor((Date.now()-rec.t0)/1000);recBtn.innerHTML=`<i class="dot"></i>${Math.floor(s/60)}:${pad(s%60)} · Stop`}
+function recUI(on){recBtn.classList.toggle("on",on);recBtn.setAttribute("aria-pressed",on?"true":"false");if(!on)recBtn.innerHTML='<i class="dot"></i>Rec';recBtn.hidden=!on&&recBtn.hidden}
+recBtn.onclick=()=>rec?recStop():recStart();
+function recShow(blob,dur){
+  if(!blob.size){toast("La vidéo est vide. Réessaie.");return}
+  const ext=blob.type.includes("mp4")?"mp4":"webm",d=new Date(),name=`defis-concentre-${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}.${ext}`;
+  const url=URL.createObjectURL(blob),mb=(blob.size/1048576).toFixed(1).replace(".",",");
+  const file=new File([blob],name,{type:blob.type});const canShare=!!(navigator.canShare&&navigator.canShare({files:[file]}));
+  modal(`<h2 id="recTitle">Ta partie est filmée</h2>
+    <video src="${url}" controls playsinline></video>
+    <p class="note">${Math.floor(dur/60)} min ${pad(dur%60)} s · ${mb} Mo · ${ext.toUpperCase()}</p>
+    <div class="row2"><button class="cta" type="button" id="recSave" style="font-size:18px;padding:12px">Télécharger</button>${canShare?`<button class="ghost" type="button" id="recShare">Partager</button>`:`<button class="ghost" type="button" data-close>Fermer</button>`}</div>
+    ${canShare?`<button class="ghost" type="button" data-close>Fermer</button>`:""}
+    <p class="note">Poste-la avec #Concentré #Edalam pour défier tes amis.</p>`);
+  $("#recSave").onclick=async()=>{try{if(downloads)await downloads.save({filename:name,data:blob});else{const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove()}}catch(e){if(!e||e.code!=="declined")toast("Téléchargement impossible")}};
+  const sh=$("#recShare");if(sh)sh.onclick=async()=>{try{await navigator.share({files:[file],title:"Défis Concentré",text:"Ma partie aux Défis Concentré d'Edalam #Concentré #Edalam"})}catch(e){}};
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#recModal").hidden)closeModal()});
 /* admin tabs */
 let adminPane="ov";
 function setPane(p){adminPane=p;document.querySelectorAll("#atabs .tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.p===p));document.querySelectorAll(".apane").forEach(x=>x.hidden=x.dataset.p!==p);if(p==="so"){fillSons();renderSonsTable()}}

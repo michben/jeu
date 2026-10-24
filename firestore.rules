@@ -37,6 +37,11 @@ service cloud.firestore {
       allow read: if signedIn();
       allow write: if isAdmin();
     }
+    // Comptes créés (email, dates de connexion) : visibles par le joueur lui-même et l'admin.
+    match /accounts/{uid} {
+      allow read: if isSelf(uid) || isAdmin();
+      allow write: if isSelf(uid);
+    }
     // Liste d'admins supplémentaires : un admin peut donner ou retirer les droits depuis la console du jeu.
     match /admins/{uid} {
       allow read: if isSelf(uid) || isAdmin();

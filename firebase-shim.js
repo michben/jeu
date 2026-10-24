@@ -161,6 +161,12 @@ else {
     const email = (u.email || "").toLowerCase();
     let admin = !!u.emailVerified && ADMIN_EMAILS.map(x => x.toLowerCase()).includes(email);
     if (!admin) { try { admin = (await getDoc(doc(fs, "admins/" + u.uid))).exists(); } catch (_) {} }
+    // Trace chaque compte pour que l'admin voie aussi ceux qui n'ont pas fini leur profil joueur.
+    try {
+      const ref = doc(fs, "accounts/" + u.uid), prev = await getDoc(ref), now = Date.now();
+      const prov = (u.providerData[0] && u.providerData[0].providerId) || "password";
+      await setDoc(ref, { email: u.email || "", provider: prov, verified: !!u.emailVerified, lastLogin: now, ...(prev.exists() ? {} : { createdAt: now }) }, { merge: true });
+    } catch (_) { window.__rulesMissing = true; }
     hideOverlay();
     const user = {
       id: async () => u.uid, canEdit: async () => admin, isOwner: async () => admin, can: async () => true,

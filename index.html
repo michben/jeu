@@ -619,6 +619,7 @@ body{background:radial-gradient(120% 70% at 50% 0%,#1a1710 0%,var(--bg) 60%) fix
           <thead><tr id="aHead"></tr></thead>
           <tbody id="aRows"></tbody>
         </table></div>
+        <div id="orphans" hidden></div>
         <p class="note" id="adminNote">Lien joueurs : le lien de cette page sans <b>#admin</b>. Pour qu'ils puissent s'inscrire, partage la page avec le niveau Contributeur. Pour donner les droits admin à quelqu'un, ajoute-le au niveau Éditeur dans le menu Partager.</p>
       </div>
     </div>
@@ -828,7 +829,9 @@ async function boot(){
   db.doc("config/orbes").onSnapshot(s=>{orbCfg={...DEFAULT_ORB,...(s.exists?s.data():{})};if(view==="home")renderHome();if(view==="admin"&&adminPane==="ob"&&!$("#orbSet").contains(document.activeElement)&&!$("#lotRows").contains(document.activeElement))fillOrb()},()=>{});
   db.doc("config/sons").onSnapshot(s=>{sonsCfg={...DEFAULT_SONS,...(s.exists?s.data():{})};if(view==="admin"&&adminPane==="so"&&!$("#sonsSet").contains(document.activeElement))fillSons()},()=>{});
   db.collection("sounds").onSnapshot(s=>{sounds=s.docs.map(d=>({id:d.id,...d.data()}));if(view==="admin")renderSonsTable()},()=>{});
-  if(isAdmin&&C&&C.auth){canGrant=true;db.collection("admins").onSnapshot(s=>{admins=new Set(s.docs.map(d=>d.id));if(view==="admin")renderRows()},()=>{})}
+  if(isAdmin&&C&&C.auth){db.collection("accounts").onSnapshot(s=>{accounts=s.docs.map(d=>({id:d.id,...d.data()}));if(view==="admin")renderOrphans()},()=>{});
+    if(window.__rulesMissing)setTimeout(()=>toast("Règles Firestore manquantes : publie firestore.rules dans Firebase"),1500);
+    canGrant=true;db.collection("admins").onSnapshot(s=>{admins=new Set(s.docs.map(d=>d.id));if(view==="admin")renderRows()},()=>{})}
   if(isAdmin)db.collection("registrations").onSnapshot(s=>{regs={};s.docs.forEach(d=>regs[d.id]=d.data());if(view==="admin")renderAdmin()},()=>{});
   route();
 }
@@ -853,7 +856,7 @@ $("#regForm").addEventListener("submit",async e=>{
     await db.doc("players/"+uid).set({pseudo,pseudoKey:key,ville,createdAt:now,games:0,bestMem:0,bestMemPts:0,bestCol:0,bestColPts:0,bestObj:0,bestObjPts:0,lastAt:0,history:[]});
     toast("Profil créé");
   }catch(x){
-    err.textContent=x&&x.code==="invalid_argument"?"Ton accès à cette page ne permet pas de t'inscrire. Demande à Edalam un accès Contributeur.":x&&x.code==="quota_exceeded"?"Le jeu a atteint sa limite d'inscrits. Préviens l'organisateur.":"L'inscription n'est pas passée. Réessaie dans un instant.";
+    err.textContent=x&&x.code==="invalid_argument"?(window.claude&&window.claude.auth?"La base du jeu refuse l'inscription. Préviens l'organisateur : les règles Firestore ne sont pas publiées.":"Ton accès à cette page ne permet pas de t'inscrire. Demande à Edalam un accès Contributeur."):x&&x.code==="quota_exceeded"?"Le jeu a atteint sa limite d'inscrits. Préviens l'organisateur.":"L'inscription n'est pas passée. Réessaie dans un instant.";
   }
   btn.disabled=false;btn.textContent="Créer mon profil";
 });
@@ -1688,7 +1691,7 @@ $("#again").onclick=()=>{ctx();MODES.find(x=>x.id===S.mode).start()};
 $("#homeBtn").onclick=()=>{clearAll();stopBuf();show("home");route()};
 
 /* =================== ADMIN =================== */
-let sortK="createdAt",sortDir=-1,armed=null,admins=new Set(),canGrant=false;
+let sortK="createdAt",sortDir=-1,armed=null,admins=new Set(),canGrant=false,accounts=[];
 function cfgDoc(next){const o={open:next.open,modes:next.modes,announcement:next.announcement||"",banned:next.banned||[],sfx:next.sfx||DEFAULT_CFG.sfx,rec:next.rec!==false};if(Array.isArray(next.radio))o.radio=next.radio;return o}
 async function writeCfg(patch){
   const next={...cfg,...patch,modes:{...cfg.modes,...(patch.modes||{})},sfx:{...cfg.sfx,...(patch.sfx||{})}};
@@ -1739,7 +1742,14 @@ function renderAdmin(){
   $("#aFeed").innerHTML=feed.length?feed.slice(0,15).map(h=>`<li><span><b>${esc(h.pseudo)}</b> · ${MLABEL[h.m]||h.m} ${h.ok}/${h.max} · ${h.pts} pts</span><span>${fmtDT(h.at)}</span></li>`).join(""):`<li class="empty" style="display:block">Aucune partie pour l'instant.</li>`;
   renderHead();renderRows();renderSonsTable();if(adminPane==="ob")renderWins();
 }
-function renderRows(){
+function renderOrphans(){
+  const box=$("#orphans");if(!box)return;const ids=new Set(players.map(p=>p.id)),list=accounts.filter(a=>!ids.has(a.id)).sort((a,b)=>(b.lastLogin||0)-(a.lastLogin||0));
+  box.hidden=!canGrant;if(!canGrant)return;
+  box.innerHTML=`<h2 style="margin-top:8px">Comptes sans profil joueur · ${list.length}</h2><p class="note">Ces personnes ont créé un compte mais n'ont pas encore choisi de pseudo ni accepté le règlement. Elles apparaîtront dans le tableau ci-dessus dès qu'elles l'auront fait.</p>`+
+   (list.length?`<div class="tablewrap"><table class="mini-t"><thead><tr><th>Email</th><th>Connexion</th><th>Compte créé</th><th>Dernière connexion</th></tr></thead><tbody>${list.map(a=>`<tr><td>${esc(a.email)||"–"}${a.verified?' <span class="pill on">vérifié</span>':""}</td><td>${a.provider==="google.com"?"Google":"Email"}</td><td>${fmtDT(a.createdAt)}</td><td>${fmtDT(a.lastLogin)}</td></tr>`).join("")}</tbody></table></div>`:`<p class="empty">Aucun.</p>`)+
+   `<p class="note">Comptes créés au total : ${accounts.length}.</p>`;
+}
+function renderRows(){renderOrphans();
   const q=($("#aSearch").value||"").toLowerCase().trim();
   let rows=rowsData().filter(p=>!q||[p.pseudo,p.ville,p.email].some(x=>(x||"").toLowerCase().includes(q)));
   rows.sort((a,b)=>{const x=a[sortK],y=b[sortK];if(typeof x==="string"||typeof y==="string")return String(x||"").localeCompare(String(y||""),"fr")*sortDir;return((x||0)-(y||0))*sortDir});

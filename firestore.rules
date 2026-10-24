@@ -5,7 +5,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function signedIn() { return request.auth != null; }
-    // Admin : email vérifié dans la liste, ou document admins/<uid> créé à la main dans la console Firebase.
+    // Admin : email vérifié dans la liste, ou joueur promu depuis la console admin du jeu (document admins/<uid>).
     function isAdmin() {
       return signedIn() && (
         (request.auth.token.email_verified == true && request.auth.token.email in ['sospchs@gmail.com'])
@@ -37,10 +37,10 @@ service cloud.firestore {
       allow read: if signedIn();
       allow write: if isAdmin();
     }
-    // Liste d'admins supplémentaires : gérée uniquement depuis la console Firebase.
+    // Liste d'admins supplémentaires : un admin peut donner ou retirer les droits depuis la console du jeu.
     match /admins/{uid} {
-      allow read: if isSelf(uid);
-      allow write: if false;
+      allow read: if isSelf(uid) || isAdmin();
+      allow write: if isAdmin();
     }
   }
 }

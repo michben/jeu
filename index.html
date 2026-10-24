@@ -387,7 +387,7 @@ td.n{font-variant-numeric:tabular-nums;text-align:right}
 th.n{text-align:right}
 td.ps{font:500 15px/1.1 var(--display);color:var(--ink);text-transform:uppercase;letter-spacing:.03em}
 .pill{font-size:10px;letter-spacing:.12em;padding:3px 6px;border:1px solid currentColor;text-transform:uppercase}
-.pill.on{color:var(--ok)} .pill.off{color:var(--bad)}
+.pill.on{color:var(--ok)} .pill.adm{color:var(--gold)} .pill.off{color:var(--bad)}
 .search{background:var(--bg);border:1px solid var(--rule2);padding:9px 10px;font:400 13px/1 var(--mono);color:var(--ink);flex:1;min-width:160px}
 .feed{list-style:none;margin:0;padding:0;font:400 12px/1.4 var(--mono);color:var(--muted)}
 .feed li{display:grid;grid-template-columns:1fr auto;gap:8px;padding:7px 0;border-bottom:1px solid var(--track)}
@@ -396,6 +396,42 @@ td.ps{font:500 15px/1.1 var(--display);color:var(--ink);text-transform:uppercase
 .foot{display:flex;justify-content:space-between;font:400 10px/1 var(--mono);color:var(--dim);letter-spacing:.2em;text-transform:uppercase;padding-top:10px}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
 @media (max-height:680px){.reg .cover{display:none}}
+/* ===== Polish pass: sober game UI, outlined lettering ===== */
+:root{--edge:#060504;--edge-gold:#5a4318;--lift:#8a6a2a;--panel-hi:#211e16}
+body{background:radial-gradient(120% 70% at 50% 0%,#1a1710 0%,var(--bg) 60%) fixed,var(--bg)}
+/* outlined display lettering: thick dark edge drawn under the fill, hard drop shadow */
+.hook,.otitle,.squestion,.mode .t,.final,.word,.cword,.verdict .big,.oname,.nelis,.q .target,.count3,.hello h1,.admhead h1,.np h2,.rank,.cta,.pbtn,.next,.hud .round{
+  paint-order:stroke fill;-webkit-text-stroke:.09em var(--edge);text-shadow:0 .06em 0 var(--edge),0 .1em .18em rgba(0,0,0,.45)}
+.word,.cword,.final,.count3{-webkit-text-stroke:.07em var(--edge);text-shadow:0 .05em 0 var(--edge),0 .09em .2em rgba(0,0,0,.5)}
+.cta,.pbtn{-webkit-text-stroke:0;text-shadow:none}
+.mode .t,.hud .round,.rank,.next{-webkit-text-stroke:.06em var(--edge)}
+.hook em,.hello h1 span,.admhead h1 span{-webkit-text-stroke:.09em var(--edge-gold)}
+/* buttons: solid, tactile, consistent */
+.cta,.pbtn{border-radius:6px;box-shadow:0 4px 0 var(--lift),0 8px 18px rgba(0,0,0,.35);transition:transform .08s,box-shadow .08s}
+.cta:active,.pbtn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--lift),0 3px 8px rgba(0,0,0,.35)}
+.choice,.cbtn,.ochoice,.next,.splay,.ghost,.sbtn,.chip,.tab,.mode,.panel,.field input[type=text],.field input[type=email],.setf input,.setf select,textarea,.search,.frame,.cover,.pwrap canvas,.awrap,.banner,.saybox,.kpis,.tablewrap,.endstats{border-radius:6px}
+.frame{border-radius:0}
+.choice,.cbtn,.ochoice,.next,.splay{background:linear-gradient(180deg,var(--panel-hi),var(--panel));border-color:var(--rule2);box-shadow:0 3px 0 var(--edge);transition:transform .08s,box-shadow .08s,border-color .15s,background .15s}
+.choice:hover,.cbtn:hover,.ochoice:hover,.next:hover,.splay:hover{border-color:var(--gold);background:linear-gradient(180deg,#2a2519,var(--panel))}
+.choice:active,.cbtn:active,.ochoice:active,.next:active,.splay:active{transform:translateY(2px);box-shadow:0 1px 0 var(--edge)}
+.choice.right,.cbtn.right,.ochoice.right{background:var(--gold);border-color:var(--gold);color:var(--bg);box-shadow:0 3px 0 var(--lift)}
+.choice.wrong,.cbtn.wrong,.ochoice.wrong{background:linear-gradient(180deg,#2a1611,var(--panel));border-color:var(--bad);color:var(--bad)}
+.next{color:var(--gold)}
+.next:hover{color:var(--bg);background:var(--gold)}
+/* tiles on the home screen */
+.mode{background:linear-gradient(180deg,var(--panel-hi),var(--panel));border-color:var(--rule);box-shadow:0 3px 0 var(--edge);position:relative;overflow:hidden}
+.mode::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--gold);opacity:.0;transition:opacity .15s}
+.mode:hover::before,.mode:focus-visible::before{opacity:1}
+.mode:hover{transform:translateY(-1px)}
+.mode.m-radio{background:linear-gradient(120deg,#2a2112,var(--panel) 70%)}
+/* calmer panels and chrome */
+.panel{background:linear-gradient(180deg,#1c1a13,var(--panel));border-color:var(--rule);box-shadow:0 1px 0 rgba(255,255,255,.03) inset}
+.chip{background:rgba(26,24,18,.8)}
+.tab[aria-selected="true"]{background:rgba(232,188,96,.08)}
+.timer,.segs i,.rprog{border-radius:3px}
+.timer span{border-radius:3px}
+.lb li .p{font-weight:500}
+#rings{opacity:.6}
 </style>
 
 <canvas id="rings" aria-hidden="true"></canvas>
@@ -544,7 +580,7 @@ td.ps{font:500 15px/1.1 var(--display);color:var(--ink);text-transform:uppercase
           <thead><tr id="aHead"></tr></thead>
           <tbody id="aRows"></tbody>
         </table></div>
-        <p class="note">Lien joueurs : le lien de cette page sans <b>#admin</b>. Pour qu'ils puissent s'inscrire, partage la page avec le niveau Contributeur.</p>
+        <p class="note" id="adminNote">Lien joueurs : le lien de cette page sans <b>#admin</b>. Pour qu'ils puissent s'inscrire, partage la page avec le niveau Contributeur. Pour donner les droits admin à quelqu'un, ajoute-le au niveau Éditeur dans le menu Partager.</p>
       </div>
     </div>
 
@@ -681,7 +717,7 @@ const reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").m
 function sizeCv(){const d=Math.min(window.devicePixelRatio||1,2);cv.width=innerWidth*d;cv.height=innerHeight*d;g2.setTransform(d,0,0,d,0,0)}
 addEventListener("resize",sizeCv);sizeCv();
 (function draw(){const w=innerWidth,h=innerHeight,cx=w/2,cy=h*.46;g2.clearRect(0,0,w,h);const R=Math.max(w,h)*.75;
-  for(let i=1;i<=16;i++){const r=R*i/16,a=.035+(i%4===0?.04:0)+pulse*.06*(1-i/16);g2.strokeStyle=`rgba(232,188,96,${a})`;g2.lineWidth=i%4===0?1.4:.7;g2.beginPath();const s=rot*(i%2?1:-1)+i;g2.arc(cx,cy,r,s,s+Math.PI*1.72);g2.stroke()}
+  for(let i=1;i<=16;i++){const r=R*i/16,a=.025+(i%4===0?.03:0)+pulse*.05*(1-i/16);g2.strokeStyle=`rgba(232,188,96,${a})`;g2.lineWidth=i%4===0?1.4:.7;g2.beginPath();const s=rot*(i%2?1:-1)+i;g2.arc(cx,cy,r,s,s+Math.PI*1.72);g2.stroke()}
   pulse*=.92;if(!reduce)rot+=.0016;requestAnimationFrame(draw)})();
 
 /* =================== Views / routing =================== */
@@ -728,6 +764,7 @@ async function boot(){
   db.collection("players").onSnapshot(s=>{players=s.docs.map(d=>({id:d.id,...d.data()}));me=players.find(p=>p.id===uid)||null;playersLoaded=true;route()},()=>{playersLoaded=true;route()});
   db.doc("config/sons").onSnapshot(s=>{sonsCfg={...DEFAULT_SONS,...(s.exists?s.data():{})};if(view==="admin"&&adminPane==="so"&&!$("#sonsSet").contains(document.activeElement))fillSons()},()=>{});
   db.collection("sounds").onSnapshot(s=>{sounds=s.docs.map(d=>({id:d.id,...d.data()}));if(view==="admin")renderSonsTable()},()=>{});
+  if(isAdmin&&C&&C.auth){canGrant=true;db.collection("admins").onSnapshot(s=>{admins=new Set(s.docs.map(d=>d.id));if(view==="admin")renderRows()},()=>{})}
   if(isAdmin)db.collection("registrations").onSnapshot(s=>{regs={};s.docs.forEach(d=>regs[d.id]=d.data());if(view==="admin")renderAdmin()},()=>{});
   route();
 }
@@ -1411,7 +1448,7 @@ $("#again").onclick=()=>{ctx();MODES.find(x=>x.id===S.mode).start()};
 $("#homeBtn").onclick=()=>{clearAll();stopBuf();show("home");route()};
 
 /* =================== ADMIN =================== */
-let sortK="createdAt",sortDir=-1,armed=null;
+let sortK="createdAt",sortDir=-1,armed=null,admins=new Set(),canGrant=false;
 function cfgDoc(next){const o={open:next.open,modes:next.modes,announcement:next.announcement||"",banned:next.banned||[],sfx:next.sfx||DEFAULT_CFG.sfx};if(Array.isArray(next.radio))o.radio=next.radio;return o}
 async function writeCfg(patch){
   const next={...cfg,...patch,modes:{...cfg.modes,...(patch.modes||{})},sfx:{...cfg.sfx,...(patch.sfx||{})}};
@@ -1443,10 +1480,11 @@ $("#rReset").onclick=async()=>{if(await writeCfg({radio:DEFAULT_RADIO})){$("#rEd
 $("#aToGame").onclick=()=>{location.hash=""};
 $("#aSearch").oninput=()=>renderRows();
 function renderHead(){
+  if(canGrant)$("#adminNote").textContent="« Rendre admin » donne l'accès complet à cette console. Les nouveaux admins doivent se reconnecter pour voir le bouton Admin.";
   $("#aHead").innerHTML=`<th data-k="pseudo">Pseudo</th><th data-k="ville">Ville</th><th data-k="email">Email</th><th data-k="createdAt">Inscrit</th><th class="n" data-k="games">Parties</th>${MODES.map(m=>`<th class="n" data-k="${KEY[m.id]}Pts" title="${m.name}">${m.short}</th>`).join("")}<th data-k="lastAt">Dernière</th><th>Statut</th><th>Actions</th>`;
   $("#aHead").querySelectorAll("th[data-k]").forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(sortK===k)sortDir*=-1;else{sortK=k;sortDir=["pseudo","ville","email"].includes(k)?1:-1}renderRows()});
 }
-function rowsData(){return players.map(p=>({...p,email:(regs[p.id]||{}).email||"",newsletter:!!(regs[p.id]||{}).newsletter,isBanned:banned(p.id)}))}
+function rowsData(){return players.map(p=>({...p,email:(regs[p.id]||{}).email||"",newsletter:!!(regs[p.id]||{}).newsletter,isBanned:banned(p.id),isAdm:admins.has(p.id)}))}
 const bestTxt=(p,m)=>p[KEY[m]]?`${p[KEY[m]]}/${m==="son"?(p.bestSonMax||"?"):MAXS[m]}`:"–";
 function renderAdmin(){
   setSw($("#sOpen"),cfg.open);
@@ -1466,11 +1504,12 @@ function renderRows(){
   rows.sort((a,b)=>{const x=a[sortK],y=b[sortK];if(typeof x==="string"||typeof y==="string")return String(x||"").localeCompare(String(y||""),"fr")*sortDir;return((x||0)-(y||0))*sortDir});
   const cols=9+MODES.length;
   $("#aRows").innerHTML=rows.length?rows.map(p=>`<tr data-id="${esc(p.id)}">
-    <td class="ps">${esc(p.pseudo)}${p.id===uid?' <span class="pill on">toi</span>':""}</td><td>${esc(p.ville)||"–"}</td><td>${esc(p.email)||"–"}${p.newsletter?' <span class="pill on">news</span>':""}</td>
+    <td class="ps">${esc(p.pseudo)}${p.id===uid?' <span class="pill on">toi</span>':""}${p.isAdm?' <span class="pill adm">admin</span>':""}</td><td>${esc(p.ville)||"–"}</td><td>${esc(p.email)||"–"}${p.newsletter?' <span class="pill on">news</span>':""}</td>
     <td>${fmtDate(p.createdAt)}</td><td class="n">${p.games||0}</td>${MODES.map(m=>`<td class="n">${bestTxt(p,m.id)}</td>`).join("")}<td>${fmtDT(p.lastAt)}</td>
     <td>${p.isBanned?'<span class="pill off">Suspendu</span>':'<span class="pill on">Actif</span>'}</td>
     <td><div class="btnrow" style="flex-wrap:nowrap">
       <button class="sbtn sm" data-a="ban" type="button">${p.isBanned?"Réactiver":"Suspendre"}</button>
+      ${canGrant&&p.id!==uid?`<button class="sbtn sm" data-a="adm" type="button">${p.isAdm?"Retirer admin":"Rendre admin"}</button>`:""}
       <button class="sbtn sm" data-a="reset" type="button">RAZ scores</button>
       <button class="sbtn sm dng${armed===p.id?" arm":""}" data-a="del" type="button">${armed===p.id?"Confirmer":"Supprimer"}</button>
     </div></td></tr>`).join(""):`<tr><td colspan="${cols}" class="empty">${players.length?"Aucun joueur ne correspond à la recherche.":"Aucun inscrit pour l'instant. Partage le lien du jeu pour recevoir les premières inscriptions."}</td></tr>`;
@@ -1478,6 +1517,7 @@ function renderRows(){
 $("#aRows").onclick=async e=>{
   const b=e.target.closest("button[data-a]");if(!b)return;const id=b.closest("tr").dataset.id,a=b.dataset.a,p=players.find(x=>x.id===id);if(!p)return;
   if(a==="ban"){const list=(cfg.banned||[]).slice();const i=list.indexOf(id);if(i>-1)list.splice(i,1);else list.push(id);await writeCfg({banned:list})}
+  else if(a==="adm"){const was=admins.has(id);try{if(was)await db.doc("admins/"+id).delete();else await db.doc("admins/"+id).set({by:uid,at:Date.now()});toast(was?"Droits admin retirés":"Droits admin donnés à "+p.pseudo)}catch(x){toast("Échec : vérifie les règles Firestore")}}
   else if(a==="reset"){const z={};MODES.forEach(m=>{z[KEY[m.id]]=0;z[KEY[m.id]+"Pts"]=0});try{await db.doc("players/"+id).update(z);toast("Scores remis à zéro")}catch(x){toast("Échec")}}
   else if(a==="del"){
     if(armed!==id){armed=id;renderRows();clearTimeout(renderRows.t);renderRows.t=setTimeout(()=>{armed=null;renderRows()},3500);return}

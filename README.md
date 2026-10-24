@@ -10,6 +10,7 @@ Six jeux de concentration autour du morceau **Concentré** d'Edalam, avec compte
 | Pause au bon moment | 12 chances : fige la pochette quand elle est reconstituée |
 | Question d'angle | 5 sculptures 3D : trouve l'angle qui révèle le mot |
 | Sons à l'envers | Reconnais un son joué à l'envers (sons gérés dans la console) |
+| **Bonus du jour : Les Orbes du Nil** | 10 orbes dans un temple à rebonds : gagne des Points Concentré et parfois un lot |
 
 Le site est statique (HTML, CSS, JavaScript). Les comptes et les données passent par **Firebase** (offre gratuite « Spark »).
 
@@ -44,6 +45,7 @@ Ajouter un autre admin : ajoute son email dans `ADMIN_EMAILS` (firebase-config.j
 - **Joueurs** : recherche, tri, suspension, remise à zéro des scores, suppression, export CSV.
 - **Réglages** : ouverture du jeu et de chaque défi, annonce, pack d'effets sonores, volumes.
 - **Sons à l'envers** : 18 réglages de jeu (manches, écoutes, chrono, vitesse, points, bonus, vies…), bibliothèque de sons, import de fichiers audio avec découpe (4 s maximum par son).
+- **Bonus du jour** : parties par jour, physique, valeurs des réceptacles, Points Concentré, lots (score minimum, chance, stock) et suivi des gagnants.
 - **Radio** : titres affichés dans la radio, avec leur lien Spotify.
 
 ## Fichiers

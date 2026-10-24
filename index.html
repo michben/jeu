@@ -329,7 +329,8 @@ form{display:flex;flex-direction:column;gap:12px}
 .sons-t .switch{transform:scale(.8);transform-origin:left}
 
 /* END */
-.end{justify-content:center;gap:14px;text-align:center}
+.end{justify-content:safe center;gap:14px;text-align:center;overflow-y:auto;padding-block:8px}
+.end>*{flex:none}
 .final{font-weight:700;font-size:clamp(96px,30vw,150px);line-height:.85;color:var(--gold)}
 .final small{font-size:.38em;color:var(--muted);font-weight:400}
 .rank{font-size:26px;text-transform:uppercase;letter-spacing:.02em;margin:0;text-wrap:balance}
@@ -432,6 +433,27 @@ body{background:radial-gradient(120% 70% at 50% 0%,#1a1710 0%,var(--bg) 60%) fix
 .timer span{border-radius:3px}
 .lb li .p{font-weight:500}
 #rings{opacity:.6}
+/* BONUS : Orbes du Nil */
+.bonus{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 12px;text-align:left;padding:14px;border-radius:8px;border:1px solid #3d5a8a;background:linear-gradient(135deg,#172a4d,#101B3A 60%,#1a1710);box-shadow:0 3px 0 var(--edge);position:relative;overflow:hidden}
+.bonus::after{content:"";position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;border:2px solid rgba(228,189,88,.35);box-shadow:0 0 0 14px rgba(228,189,88,.08),0 0 0 28px rgba(83,214,188,.06)}
+.bonus:hover{border-color:#E4BD58}
+.bonus:disabled{opacity:.55;cursor:default}
+.bonus .eyebrow{color:#53D6BC}
+.bonus .t{font-family:var(--black);font-weight:900;font-size:clamp(22px,6.5vw,28px);line-height:1;text-transform:uppercase;color:#FFF4D2;paint-order:stroke fill;-webkit-text-stroke:.08em var(--edge);grid-column:1}
+.bonus .d{font:400 11px/1.4 var(--mono);color:#cfd8ea;grid-column:1}
+.bonus .w{grid-row:1/4;grid-column:2;text-align:right;font:400 10px/1.3 var(--mono);color:#cfd8ea;letter-spacing:.08em;text-transform:uppercase;position:relative;z-index:1}
+.bonus .w strong{display:block;font:500 26px/1 var(--display);color:#E4BD58}
+.ogame{display:flex;flex-direction:column;gap:8px}
+.owrap2{position:relative;align-self:center;width:min(100%,calc((100vh - 290px) * .667));border-radius:8px;overflow:hidden;border:1px solid #3d5a8a}
+.owrap2 canvas{display:block;width:100%;aspect-ratio:720/1080;touch-action:none;cursor:crosshair}
+.owrap2 .pover{background:rgba(10,16,36,.88)}
+.obar{display:flex;justify-content:space-between;align-items:center;min-height:30px}
+.bonusbox{border:1px solid #3d5a8a;background:linear-gradient(135deg,#172a4d,#101B3A);border-radius:8px;padding:12px;font:400 12px/1.5 var(--mono);color:#cfd8ea;text-align:left;display:flex;flex-direction:column;gap:6px}
+.bonusbox b{color:#E4BD58;font-weight:400}
+.bonusbox .lotwin{font-family:var(--black);font-weight:900;font-size:22px;color:#FFF4D2;text-transform:uppercase;paint-order:stroke fill;-webkit-text-stroke:.08em var(--edge)}
+.temple{display:flex;flex-direction:column;gap:6px;text-align:left}
+.lots-t{min-width:860px}.lots-t input[type=text],.lots-t input[type=number]{width:100%;background:var(--bg);border:1px solid var(--rule2);padding:7px;font:400 12px var(--mono);color:var(--ink);border-radius:4px}
+.lots-t input[type=checkbox]{accent-color:var(--gold);width:18px;height:18px}
 /* REC + home */
 .chip.rec{display:inline-flex;align-items:center;gap:6px}
 .chip.rec .dot{width:8px;height:8px;border-radius:50%;background:var(--bad);display:inline-block}
@@ -496,6 +518,7 @@ body{background:radial-gradient(120% 70% at 50% 0%,#1a1710 0%,var(--bg) 60%) fix
       <span class="note" id="hGames"></span>
     </div>
     <div class="banner" id="announce" hidden><b>INFO</b><span id="announceTxt"></span></div>
+    <div id="bonusTile"></div>
     <div class="modes" id="modes"></div>
     <div class="board">
       <span class="eyebrow">Classement</span>
@@ -552,6 +575,7 @@ body{background:radial-gradient(120% 70% at 50% 0%,#1a1710 0%,var(--bg) 60%) fix
       <div><b id="es">0</b>série max</div>
       <div><b id="eb">0</b>ta place</div>
     </div>
+    <div class="bonusbox" id="bonusBox" hidden></div>
     <span class="saved" id="savedTxt"></span>
     <button class="cta" id="again" type="button">Rejouer</button>
     <div class="row2">
@@ -575,6 +599,7 @@ body{background:radial-gradient(120% 70% at 50% 0%,#1a1710 0%,var(--bg) 60%) fix
       <button class="tab" role="tab" type="button" data-p="pl" aria-selected="false">Joueurs</button>
       <button class="tab" role="tab" type="button" data-p="st" aria-selected="false">Réglages</button>
       <button class="tab" role="tab" type="button" data-p="so" aria-selected="false">Sons à l'envers</button>
+      <button class="tab" role="tab" type="button" data-p="ob" aria-selected="false">Bonus du jour</button>
       <button class="tab" role="tab" type="button" data-p="ra" aria-selected="false">Radio</button>
     </div>
 
@@ -669,6 +694,26 @@ body{background:radial-gradient(120% 70% at 50% 0%,#1a1710 0%,var(--bg) 60%) fix
       </div>
     </div>
 
+    <div class="apane" data-p="ob" hidden>
+      <div class="kpis" id="orbKpi"></div>
+      <div class="panel">
+        <h2>Réglages · Les Orbes du Nil</h2>
+        <div class="setgrid" id="orbSet"></div>
+        <div class="btnrow"><button class="sbtn" id="orbSave" type="button">Enregistrer les réglages</button></div>
+      </div>
+      <div class="panel">
+        <h2>Lots à gagner</h2>
+        <p class="note">À chaque partie, un joueur dont le score atteint le minimum a la chance indiquée de gagner le lot, tant qu'il en reste. Un joueur ne gagne qu'une fois le même lot, et au plus un lot par partie.</p>
+        <div class="tablewrap"><table class="lots-t"><thead><tr><th>Lot</th><th>Description</th><th>Score min.</th><th>Chance %</th><th>Stock</th><th class="n">Restant</th><th>Actif</th><th></th></tr></thead><tbody id="lotRows"></tbody></table></div>
+        <div class="btnrow"><button class="sbtn" id="lotAdd" type="button">+ Ajouter un lot</button><button class="sbtn" id="lotSave" type="button">Enregistrer les lots</button></div>
+      </div>
+      <div class="panel">
+        <h2>Gagnants</h2>
+        <div class="tablewrap"><table class="mini-t" style="min-width:760px"><thead><tr><th>Date</th><th>Joueur</th><th>Email</th><th>Lot</th><th class="n">Score</th><th>Statut</th><th></th></tr></thead><tbody id="winRows"></tbody></table></div>
+        <p class="note">Contacte les gagnants avec l'email de leur inscription. Les Points Concentré sont virtuels : aucun argent n'est misé ni gagné.</p>
+      </div>
+    </div>
+
     <div class="apane" data-p="ra" hidden>
       <div class="panel">
         <h2>Titres de la radio</h2>
@@ -698,8 +743,8 @@ const fmtDT=t=>t?new Date(t).toLocaleString("fr-FR",{day:"2-digit",month:"short"
 function toast(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;clearTimeout(toast.id);toast.id=setTimeout(()=>t.hidden=true,2200);}
 
 /* =================== Shared state =================== */
-const DEFAULT_CFG={open:true,modes:{memoire:true,couleurs:true,objets:true,pause:true,angle:true,sons:true},announcement:"",banned:[],sfx:{pack:"classique",vol:1,music:.45}};
-const KEY={mem:"bestMem",col:"bestCol",obj:"bestObj",pau:"bestPau",ang:"bestAng",son:"bestSon"},MAXS={mem:8,col:10,obj:5,pau:12,ang:5,son:3},MLABEL={mem:"Mémoire",col:"Couleurs",obj:"Objets",pau:"Pause",ang:"Angle",son:"Sons"};
+const DEFAULT_CFG={open:true,modes:{memoire:true,couleurs:true,objets:true,pause:true,angle:true,sons:true,orbes:true},announcement:"",banned:[],sfx:{pack:"classique",vol:1,music:.45}};
+const KEY={mem:"bestMem",col:"bestCol",obj:"bestObj",pau:"bestPau",ang:"bestAng",son:"bestSon",orb:"bestOrb"},MAXS={mem:8,col:10,obj:5,pau:12,ang:5,son:3,orb:10},MLABEL={mem:"Mémoire",col:"Couleurs",obj:"Objets",pau:"Pause",ang:"Angle",son:"Sons",orb:"Orbes"};
 let db=null,userCap=null,downloads=null,uid=null,isAdmin=false;
 let cfg=JSON.parse(JSON.stringify(DEFAULT_CFG)),cfgLoaded=false;
 let players=[],playersLoaded=false,me=null,regs={};
@@ -779,7 +824,8 @@ async function boot(){
   if(userCap){try{const w=await userCap.can("data.write");if(w===false&&!isAdmin)readOnly=true}catch(e){}}
   if(!db||!uid){route();return}
   db.doc("config/game").onSnapshot(s=>{const d=s.exists?s.data():{};cfg={...DEFAULT_CFG,...d,modes:{...DEFAULT_CFG.modes,...(d.modes||{})},sfx:{...DEFAULT_CFG.sfx,...(d.sfx||{})},banned:Array.isArray(d.banned)?d.banned.slice():[]};if(!musicOn)music.volume=musicVol();cfgLoaded=true;if(view==="admin"&&!fillSettings.done){fillSettings();fillSettings.done=1}if(view==="radio")renderRadio();route()},()=>{cfgLoaded=true;route()});
-  db.collection("players").onSnapshot(s=>{players=s.docs.map(d=>({id:d.id,...d.data()}));me=players.find(p=>p.id===uid)||null;playersLoaded=true;route()},()=>{playersLoaded=true;route()});
+  db.collection("players").onSnapshot(s=>{players=s.docs.map(d=>({id:d.id,...d.data()}));me=players.find(p=>p.id===uid)||null;playersLoaded=true;if(view==="end"&&S&&S.mode==="orb"){const tb=$("#templeBox");if(tb)tb.innerHTML=templeHtml();$("#again").textContent=orbLeft()>0?"Rejouer":"Reviens demain"}route()},()=>{playersLoaded=true;route()});
+  db.doc("config/orbes").onSnapshot(s=>{orbCfg={...DEFAULT_ORB,...(s.exists?s.data():{})};if(view==="home")renderHome();if(view==="admin"&&adminPane==="ob"&&!$("#orbSet").contains(document.activeElement)&&!$("#lotRows").contains(document.activeElement))fillOrb()},()=>{});
   db.doc("config/sons").onSnapshot(s=>{sonsCfg={...DEFAULT_SONS,...(s.exists?s.data():{})};if(view==="admin"&&adminPane==="so"&&!$("#sonsSet").contains(document.activeElement))fillSons()},()=>{});
   db.collection("sounds").onSnapshot(s=>{sounds=s.docs.map(d=>({id:d.id,...d.data()}));if(view==="admin")renderSonsTable()},()=>{});
   if(isAdmin&&C&&C.auth){canGrant=true;db.collection("admins").onSnapshot(s=>{admins=new Set(s.docs.map(d=>d.id));if(view==="admin")renderRows()},()=>{})}
@@ -792,7 +838,7 @@ setTimeout(()=>{if(view==="gate"&&!db&&!document.getElementById("authOv"))route(
 $("#regForm").addEventListener("submit",async e=>{
   e.preventDefault();
   const err=$("#regErr"),btn=$("#regBtn");err.textContent="";
-  const pseudo=$("#fPseudo").value.trim().replace(/\s+/g," "),ville=$("#fVille").value.trim(),email=$("#fEmail").value.trim();
+  const pseudo=$("#fPseudo").value.trim().replace(/\s+/g," "),ville=$("#fVille").value.trim(),email=$("#fEmail").value.trim()||((window.claude&&window.claude.auth&&window.claude.auth.email)||"");
   const key=pseudo.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
   if(pseudo.length<3){err.textContent="Ton pseudo doit faire au moins 3 caractères.";$("#fPseudo").focus();return}
   if(!/^[\p{L}\p{N} _.\-]+$/u.test(pseudo)){err.textContent="Pseudo : lettres, chiffres, espaces, - _ . seulement.";$("#fPseudo").focus();return}
@@ -819,17 +865,20 @@ const MODES=[
  {id:"obj",cfg:"objets",short:"Objets",name:"Un objet a disparu",title:"Un objet a disparu",desc:"5 grilles · trouve l'absent",start:()=>startObjects()},
  {id:"pau",cfg:"pause",short:"Pause",name:"Pause au bon moment",title:"Pause au bon moment",desc:"12 chances · fige la pochette",start:()=>startPause()},
  {id:"ang",cfg:"angle",short:"Angle",name:"Question d'angle",title:"Question d'angle",desc:"5 sculptures 3D · lis le mot",start:()=>startAngle()},
- {id:"son",cfg:"sons",short:"Sons",name:"Sons à l'envers",title:"Sons à l'envers",desc:"Écoute à l'envers · devine",start:()=>startSons()}
+ {id:"son",cfg:"sons",short:"Sons",name:"Sons à l'envers",title:"Sons à l'envers",desc:"Écoute à l'envers · devine",start:()=>startSons()},
+ {id:"orb",cfg:"orbes",short:"Orbes",name:"Les Orbes du Nil",title:"Les Orbes du Nil",desc:"Bonus du jour",bonus:true,start:()=>startOrbes()}
 ];
-const maxOf=(p,m)=>m==="son"?(p.bestSonMax||MAXS.son):MAXS[m];
+const maxOf=(p,m)=>m==="son"?(p.bestSonMax||MAXS.son):m==="orb"?(p.bestOrbMax||orbCfg.orbs||10):MAXS[m];
 let lbMode="mem";
 function ranked(mode){const k=KEY[mode]+"Pts";return players.filter(p=>!banned(p.id)&&(p[k]||0)>0).sort((a,b)=>(b[k]||0)-(a[k]||0)||(a.lastAt||0)-(b.lastAt||0))}
 function renderHome(){
   $("#hPseudo").textContent=me.pseudo;
-  $("#hGames").textContent=(me.games||0)+" partie"+((me.games||0)>1?"s":"");
+  $("#hGames").textContent=(me.games||0)+" partie"+((me.games||0)>1?"s":"")+" · "+(me.bonusPoints||0)+" pts";
   const ann=(cfg.announcement||"").trim();$("#announce").hidden=!ann;$("#announceTxt").textContent=ann;
   if(!cfg.open&&isAdmin){$("#announce").hidden=false;$("#announceTxt").textContent="Jeu fermé aux joueurs (tu le vois car tu es admin). "+ann}
-  $("#modes").innerHTML=MODES.map(m=>{const on=cfg.modes[m.cfg]!==false,b=me[KEY[m.id]];return `<button class="mode m-${m.id}" type="button" data-m="${m.id}" ${on?"":"disabled"}>
+  {const on=cfg.modes.orbes!==false,left=orbLeft();
+   $("#bonusTile").innerHTML=on?`<button class="bonus" type="button" id="toOrb" ${left<=0?"disabled":""}><span class="eyebrow">Bonus du jour</span><span class="t">Les Orbes du Nil</span><span class="d">${left===Infinity?"Parties illimitées (admin)":left>0?left+" partie"+(left>1?"s":"")+" gratuite"+(left>1?"s":"")+" aujourd'hui · gagne des points"+((orbCfg.lots||[]).some(l=>l.active!==false&&lotRemaining(l)>0)?" et des lots":""):"Déjà joué · reviens dans "+untilMidnight()}</span><span class="w">Tes points<strong>${me.bonusPoints||0}</strong></span></button>`:""}
+  $("#modes").innerHTML=MODES.filter(m=>!m.bonus).map(m=>{const on=cfg.modes[m.cfg]!==false,b=me[KEY[m.id]];return `<button class="mode m-${m.id}" type="button" data-m="${m.id}" ${on?"":"disabled"}>
      <span class="t">${m.title}</span><span class="d">${m.desc}</span>
      <span class="f"><span class="go">${on?"JOUER →":"FERMÉ"}</span><span class="b">${b?`<strong>${b}</strong>/${maxOf(me,m.id)}`:"–"}</span></span></button>`}).join("")
     +`<button class="mode m-radio" type="button" id="toRadio"><span class="t">Radio Edalam</span><span class="d">Concentré ici · ses titres sur Spotify</span><span class="f"><span class="go">ÉCOUTER ♪</span></span></button>`;
@@ -844,6 +893,7 @@ function renderHome(){
   function row(p,i){return `<li class="${p.id===uid?"me":""}"><span class="r">${pad(i+1)}</span><span class="p">${esc(p.pseudo)}${p.ville?`<small>${esc(p.ville)}</small>`:""}</span><span class="s">${p[k]}/${maxOf(p,lbMode)} · ${p[kp]} pts</span></li>`}
 }
 $("#tabs").onclick=e=>{const b=e.target.closest(".tab");if(b){lbMode=b.dataset.m;renderHome()}};
+$("#bonusTile").onclick=e=>{if(e.target.closest("#toOrb:not([disabled])")){autoMusic();startOrbes()}};
 $("#modes").onclick=e=>{
   if(e.target.closest("#toRadio")){openRadio();return}
   const b=e.target.closest(".mode[data-m]");if(!b||b.disabled)return;const m=MODES.find(x=>x.id===b.dataset.m);
@@ -856,7 +906,7 @@ function renderProfile(){
   if(!me)return;
   $("#pPseudo").textContent=me.pseudo;
   $("#pMeta").textContent=(me.ville?me.ville+" · ":"")+"inscrit le "+new Date(me.createdAt).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
-  $("#pStats").innerHTML=`<div><b>${me.games||0}</b>parties</div>`+MODES.map(m=>`<div><b>${me[KEY[m.id]]?me[KEY[m.id]]+"/"+maxOf(me,m.id):"–"}</b>${m.short}</div>`).join("");
+  $("#pStats").innerHTML=`<div><b>${me.games||0}</b>parties</div><div><b>${me.bonusPoints||0}</b>Points Concentré</div><div><b>${(me.wins||[]).length}</b>lots gagnés</div>`+MODES.map(m=>`<div><b>${me[KEY[m.id]]?me[KEY[m.id]]+"/"+maxOf(me,m.id):"–"}</b>${m.short}</div>`).join("");
   const h=(me.history||[]).slice().reverse();
   $("#pHist").innerHTML=h.length?h.map(x=>`<li><span><b>${MLABEL[x.m]||x.m}</b> · ${fmtDT(x.at)}</span><span>${x.ok}/${x.max}</span><span>${x.pts} pts</span></li>`).join(""):`<li class="empty" style="display:block">Aucune partie encore.</li>`;
 }
@@ -896,6 +946,8 @@ async function saveResult(mode,ok,max,pts,extra){
   const patch={games:(me.games||0)+1,lastAt:Date.now(),history:hist,gamesBy:{[mode]:((me.gamesBy||{})[mode]||0)+1}};
   if(better){patch[k]=ok;patch[k+"Pts"]=pts;if(mode==="son")patch.bestSonMax=max}
   if(extra&&extra.sonsStats)patch.sonsStats=extra.sonsStats;
+  if(extra&&extra.patch)Object.assign(patch,extra.patch);
+  if(better&&mode==="orb")patch.bestOrbMax=max;
   try{await db.doc("players/"+uid).update(patch);st.textContent=better?"Nouveau record enregistré":"Partie enregistrée";
     const list=ranked(mode);const idx=list.findIndex(p=>p.id===uid);$("#eb").textContent=idx>-1?"#"+(idx+1):"–";
   }catch(e){st.textContent="Score non enregistré (connexion). Ta partie reste affichée ici."}
@@ -1425,6 +1477,164 @@ async function encodeClip(buf,start,end,gain){
   return {b64:btoa(bin),dur};
 }
 
+/* =================== BONUS DU JOUR : LES ORBES DU NIL =================== */
+const DEFAULT_ORB={playsPerDay:1,orbs:10,gravity:900,restitution:.55,rotorSpeed:.6,timeout:12,bins:"100,150,200,500,200,150,100",combo2:100,combo3:250,ptsRate:10,adminUnlimited:true,lots:[]};
+let orbCfg={...DEFAULT_ORB};
+const FAM=["ankh","eye","waves","sun","waves","eye","ankh"];
+const FAMC={ankh:"#53D6BC",eye:"#9C7BE0",waves:"#B97442",sun:"#E4BD58"};
+const FAMN={ankh:"Ankh",eye:"Œil",waves:"Vagues",sun:"Soleil"};
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())};
+const binVals=()=>{const v=String(orbCfg.bins||DEFAULT_ORB.bins).split(/[,; ]+/).map(Number).filter(n=>isFinite(n));return v.length===7?v:DEFAULT_ORB.bins.split(",").map(Number)};
+const orbPlaysToday=p=>{const d=(p&&p.orbDay)||{};return d.d===today()?(d.plays||0):0};
+const orbLeft=()=>isAdmin&&orbCfg.adminUnlimited?Infinity:Math.max(0,(orbCfg.playsPerDay||1)-orbPlaysToday(me));
+function allWins(){const out=[];players.forEach(p=>(p.wins||[]).forEach((w,i)=>out.push({...w,pid:p.id,pseudo:p.pseudo,idx:i})));return out.sort((a,b)=>b.at-a.at)}
+const lotRemaining=l=>Math.max(0,(+l.stock||0)-allWins().filter(w=>w.lotId===l.id).length);
+function dailyTop(){const d=today();return players.filter(p=>!banned(p.id)&&p.orbDay&&p.orbDay.d===d&&p.orbDay.best>0).sort((a,b)=>b.orbDay.best-a.orbDay.best).slice(0,10)}
+function templeHtml(){const t=dailyTop();return `<div class="temple"><span class="eyebrow">Temple des 10 · aujourd'hui</span>${t.length?`<ol class="lb">${t.map((p,i)=>`<li class="${p.id===uid?"me":""}"><span class="r">${pad(i+1)}</span><span class="p">${esc(p.pseudo)}</span><span class="s">${p.orbDay.best} pts</span></li>`).join("")}</ol>`:`<p class="empty">Personne n'a encore joué aujourd'hui.</p>`}</div>`}
+function untilMidnight(){const n=new Date(),m=new Date(n);m.setHours(24,0,0,0);const s=Math.max(0,Math.round((m-n)/1000));return `${Math.floor(s/3600)} h ${pad(Math.floor(s%3600/60))}`}
+
+/* ---- board geometry (logical 720 × 1080) ---- */
+const OW=720,OH=1080,WL=40,WR=680,FLOOR=1040,BIN_TOP=930,BW=(WR-WL)/7,OR=10;
+function buildBoard(){
+  const rot=[{x:360,y:330,len:64,dir:-1},{x:205,y:615,len:56,dir:1},{x:515,y:615,len:56,dir:-1}];
+  const pegs=[];
+  for(let r=0;r<12;r++){const y=232+r*56,off=r%2?36:0;for(let x=76+off;x<=644;x+=72){if(rot.some(o=>Math.hypot(x-o.x,y-o.y)<o.len+24))continue;if(y>BIN_TOP-30)continue;pegs.push({x,y,r:6})}}
+  const segs=[[WL,150,WL,FLOOR],[WR,150,WR,FLOOR],[WL,FLOOR,WR,FLOOR],[WL,170,WL+46,140],[WR,170,WR-46,140]];
+  const posts=[];for(let k=1;k<7;k++){const x=WL+k*BW;segs.push([x,BIN_TOP,x,FLOOR]);posts.push({x,y:BIN_TOP,r:5})}
+  return {rot,pegs,segs,posts};
+}
+function startOrbes(){
+  clearAll();
+  if(orbLeft()<=0){show("game");$("#hudL").innerHTML="Bonus du jour";$("#sc").textContent=me.bonusPoints||0;$("#ok").textContent="";$("#th").textContent="Les Orbes du Nil";
+    stage.innerHTML=`<div class="q"><p class="why">Tu as joué ta partie du jour. Reviens dans <b>${untilMidnight()}</b>.</p>${templeHtml()}<button class="next" id="obk" type="button">Retour à l'accueil</button></div>`;$("#obk").onclick=()=>{show("home");route()};return}
+  const vals=binVals();
+  S={mode:"orb",score:0,ok:0,streak:0,maxStreak:0,results:[],center:0,bestBonus:0,left:orbCfg.orbs,total:orbCfg.orbs,fam:null,famLen:0,paused:false,board:buildBoard(),orb:null,lx:360,ang:0,t:0,fx:[],vals};
+  $("#hudL").innerHTML=`Orbes <b id="rn">${S.left}</b>/${S.total}`;$("#sc").textContent="0";$("#ok").textContent="0";
+  $("#th").textContent=isAdmin&&orbCfg.adminUnlimited?"Bonus du jour · test admin illimité":"Bonus du jour · "+(orbCfg.playsPerDay>1?orbLeft()+" parties aujourd'hui":"1 partie par jour");
+  show("game");
+  stage.innerHTML=`<div class="ogame">
+    <div class="owrap2" id="owrap2"><canvas id="oc" aria-label="Plateau des Orbes du Nil"></canvas>
+      <div class="pover" id="oover"><span class="eyebrow">Bonus du jour</span><p class="prule">Les Orbes du Nil</p>
+        <p class="note">Place le lanceur, lâche ${S.total} orbes. Le Soleil au centre vaut ${vals[3]} points. Deux captures d'affilée du même symbole : +${orbCfg.combo2}, trois : +${orbCfg.combo3}.${orbCfg.lots&&orbCfg.lots.some(l=>l.active!==false&&lotRemaining(l)>0)?" Un bon score peut faire gagner un lot.":""}</p>
+        <button class="cta" id="ogo" type="button" style="width:auto;padding:12px 22px;font-size:20px">Entrer dans le temple</button></div></div>
+    <div class="obar"><span id="oseries" class="note"></span><span class="obtns"><button class="sbtn sm" id="opause" type="button">Pause</button></span></div>
+    <button class="pbtn" id="odrop" type="button">Lâcher l'orbe</button>
+  </div>`;
+  const cv=$("#oc"),wrap=$("#owrap2");
+  const size=()=>{const d=Math.min(window.devicePixelRatio||1,2),w=wrap.clientWidth;cv.width=Math.round(w*d);cv.height=Math.round(w*OH/OW*d)};size();
+  S.resize=size;window.addEventListener("resize",size);
+  $("#odrop").disabled=true;
+  const toX=e=>{const r=cv.getBoundingClientRect();return Math.max(WL+20,Math.min(WR-20,(e.clientX-r.left)/r.width*OW))};
+  let down=null;
+  cv.onpointerdown=e=>{down={x:e.clientX,t:performance.now()};S.lx=toX(e);try{cv.setPointerCapture(e.pointerId)}catch(_){}};
+  cv.onpointermove=e=>{if(down||e.pointerType==="mouse")S.lx=toX(e)};
+  cv.onpointerup=e=>{if(down&&Math.abs(e.clientX-down.x)<8&&performance.now()-down.t<400)oDrop();down=null};
+  $("#odrop").onclick=oDrop;
+  $("#opause").onclick=oPause;
+  document.onkeydown=e=>{if(e.key==="ArrowLeft")S.lx=Math.max(WL+20,S.lx-18);else if(e.key==="ArrowRight")S.lx=Math.min(WR-20,S.lx+18);else if(e.key===" "){e.preventDefault();oDrop()}else if(e.key==="Escape")oPause()};
+  $("#ogo").onclick=()=>{$("#oover").hidden=true;$("#odrop").disabled=false;S.started=true;};
+  let last=performance.now(),acc=0;
+  const loop=t=>{const dt=Math.min(.05,(t-last)/1000);last=t;if(S.started&&!S.paused){acc+=dt;while(acc>=1/120){oStep(1/120);acc-=1/120}}oDraw();raf=requestAnimationFrame(loop)};
+  raf=requestAnimationFrame(loop);
+}
+function oPause(){if(!S||S.mode!=="orb"||!S.started)return;S.paused=!S.paused;$("#opause").textContent=S.paused?"Reprendre":"Pause";const o=$("#oover");if(S.paused){o.hidden=false;o.innerHTML=`<p class="prule">Pause</p><button class="cta" id="ores" type="button" style="width:auto;padding:12px 22px;font-size:20px">Reprendre</button>`;$("#ores").onclick=oPause}else o.hidden=true}
+function oDrop(){
+  if(!S||S.mode!=="orb"||!S.started||S.paused||S.orb||S.left<=0)return;
+  S.left--;$("#rn").textContent=S.left;$("#odrop").disabled=true;
+  S.orb={x:S.lx,y:150,vx:(Math.random()-.5)*20,vy:0,age:0,still:0,done:false};sfx.beep();
+}
+function collide(o,px,py,pr,svx,svy){
+  const dx=o.x-px,dy=o.y-py,d=Math.hypot(dx,dy),min=OR+pr;if(d>=min||d===0)return false;
+  const nx=dx/d,ny=dy/d;o.x=px+nx*min;o.y=py+ny*min;
+  const rvx=o.vx-(svx||0),rvy=o.vy-(svy||0),vn=rvx*nx+rvy*ny;
+  if(vn<0){const e=orbCfg.restitution;o.vx-=(1+e)*vn*nx;o.vy-=(1+e)*vn*ny;const tx=-ny,ty=nx,vt=rvx*tx+rvy*ty;o.vx-=vt*tx*.04;o.vy-=vt*ty*.04;if(-vn>120)S.hit=(S.hit||0)+1}
+  return true;
+}
+function segHit(o,x1,y1,x2,y2,svx,svy){const vx=x2-x1,vy=y2-y1,l2=vx*vx+vy*vy;let t=((o.x-x1)*vx+(o.y-y1)*vy)/l2;t=Math.max(0,Math.min(1,t));return collide(o,x1+vx*t,y1+vy*t,0,svx,svy)}
+function oStep(dt){
+  S.t+=dt;S.ang+=orbCfg.rotorSpeed*dt;
+  const o=S.orb;if(!o||o.done)return;
+  o.vy+=orbCfg.gravity*dt;const sp=Math.hypot(o.vx,o.vy);if(sp>1400){o.vx*=1400/sp;o.vy*=1400/sp}
+  o.x+=o.vx*dt;o.y+=o.vy*dt;o.age+=dt;
+  const B=S.board;
+  for(let it=0;it<2;it++){
+    for(const p of B.pegs)collide(o,p.x,p.y,p.r);
+    for(const p of B.posts)collide(o,p.x,p.y,p.r);
+    for(const s of B.segs)segHit(o,s[0],s[1],s[2],s[3]);
+    for(const r of B.rot){const w=orbCfg.rotorSpeed*r.dir;
+      collide(o,r.x,r.y,13,0,0);
+      for(let k=0;k<5;k++){const a=S.ang*r.dir+k*Math.PI*2/5,ex=r.x+Math.cos(a)*r.len,ey=r.y+Math.sin(a)*r.len;
+        const px=o.x-r.x,py=o.y-r.y;segHit(o,r.x,r.y,ex,ey,-w*py,w*px);collide(o,ex,ey,7,-w*(ey-r.y),w*(ex-r.x))}}
+  }
+  if(Math.hypot(o.vx,o.vy)<18)o.still+=dt;else o.still=0;
+  if(o.still>2){o.vx+=(Math.random()<.5?-1:1)*140;o.vy-=220;o.still=0}
+  if(o.y>FLOOR-OR-14&&o.y>BIN_TOP+20){oCapture(Math.max(0,Math.min(6,Math.floor((o.x-WL)/BW))));return}
+  if(o.age>orbCfg.timeout){oLost()}
+}
+function oCapture(i){
+  const o=S.orb;if(o.done)return;o.done=true;
+  const f=FAM[i];let pts=S.vals[i],bonus=0;
+  if(S.fam===f)S.famLen++;else{S.fam=f;S.famLen=1}
+  if(S.famLen===2)bonus=orbCfg.combo2;
+  if(S.famLen===3){bonus=orbCfg.combo3;S.fam=null;S.famLen=0}
+  S.score+=pts+bonus;S.ok++;if(i===3)S.center++;S.bestBonus=Math.max(S.bestBonus,bonus);
+  S.streak=S.famLen;S.maxStreak=Math.max(S.maxStreak,S.famLen||3);
+  S.results.push(true);$("#sc").textContent=S.score;$("#ok").textContent=S.ok;
+  S.fx.push({x:WL+BW*(i+.5),y:BIN_TOP-20,txt:"+"+pts+(bonus?" +"+bonus:""),t:0,c:FAMC[f]});
+  $("#oseries").textContent=bonus?`Série ${FAMN[f]} : +${bonus}`:S.famLen?`Série ${FAMN[f]} ×${S.famLen}`:"";
+  bonus?sfx.good():sfx.tick();pulse=bonus?1:.5;
+  oNext();
+}
+function oLost(){S.orb.done=true;S.fam=null;S.famLen=0;S.results.push(false);S.fx.push({x:360,y:520,txt:"Orbe perdue : 0 point",t:0,c:"#E07A5F"});$("#oseries").textContent="";sfx.bad();oNext()}
+function oNext(){later(()=>{S.orb=null;if(S.left<=0){window.removeEventListener("resize",S.resize);finish();return}$("#odrop").disabled=false},500)}
+/* ---- drawing ---- */
+function glyph(g,f,x,y,s,c){
+  g.save();g.translate(x,y);g.strokeStyle=c;g.fillStyle=c;g.lineWidth=s*.13;g.lineCap="round";g.lineJoin="round";
+  if(f==="ankh"){g.beginPath();g.ellipse(0,-s*.32,s*.18,s*.24,0,0,Math.PI*2);g.stroke();g.beginPath();g.moveTo(0,-s*.08);g.lineTo(0,s*.5);g.moveTo(-s*.32,s*.06);g.lineTo(s*.32,s*.06);g.stroke()}
+  else if(f==="eye"){g.beginPath();g.moveTo(-s*.45,0);g.quadraticCurveTo(0,-s*.42,s*.45,0);g.quadraticCurveTo(0,s*.42,-s*.45,0);g.stroke();g.beginPath();g.arc(0,0,s*.13,0,Math.PI*2);g.fill();g.beginPath();g.moveTo(-s*.1,s*.2);g.quadraticCurveTo(-s*.16,s*.42,-s*.3,s*.46);g.stroke()}
+  else if(f==="waves"){for(let k=-1;k<=1;k++){g.beginPath();for(let i=0;i<=16;i++){const xx=-s*.45+i*s*.9/16,yy=k*s*.24+Math.sin(i/16*Math.PI*3)*s*.07;i?g.lineTo(xx,yy):g.moveTo(xx,yy)}g.stroke()}}
+  else{g.beginPath();g.arc(0,0,s*.2,0,Math.PI*2);g.fill();for(let k=0;k<8;k++){const a=k*Math.PI/4;g.beginPath();g.moveTo(Math.cos(a)*s*.3,Math.sin(a)*s*.3);g.lineTo(Math.cos(a)*s*.46,Math.sin(a)*s*.46);g.stroke()}}
+  g.restore();
+}
+function oDraw(){
+  const cv=$("#oc");if(!cv||!S||S.mode!=="orb")return;const g=cv.getContext("2d"),k=cv.width/OW;g.setTransform(k,0,0,k,0,0);
+  const bg=g.createLinearGradient(0,0,0,OH);bg.addColorStop(0,"#0c1430");bg.addColorStop(1,"#101B3A");g.fillStyle=bg;g.fillRect(0,0,OW,OH);
+  // temple stone + arch
+  g.fillStyle="#172a4d";g.beginPath();g.moveTo(WL,FLOOR);g.lineTo(WL,170);g.quadraticCurveTo(360,30,WR,170);g.lineTo(WR,FLOOR);g.closePath();g.fill();
+  g.strokeStyle="#E4BD58";g.lineWidth=6;g.beginPath();g.moveTo(WL,FLOOR);g.lineTo(WL,170);g.quadraticCurveTo(360,30,WR,170);g.lineTo(WR,FLOOR);g.stroke();
+  g.lineWidth=1.5;g.strokeStyle="rgba(228,189,88,.35)";g.beginPath();g.moveTo(WL+14,FLOOR);g.lineTo(WL+14,180);g.quadraticCurveTo(360,52,WR-14,180);g.lineTo(WR-14,FLOOR);g.stroke();
+  [[250,118],[470,118]].forEach(([x,y])=>{g.fillStyle="#060b1c";g.beginPath();g.arc(x,y,16,0,Math.PI*2);g.fill();g.strokeStyle="#E4BD58";g.lineWidth=3;g.stroke()});
+  // bins
+  for(let i=0;i<7;i++){const x=WL+i*BW,f=FAM[i];g.fillStyle=i===3?"rgba(228,189,88,.16)":"rgba(255,255,255,.04)";g.fillRect(x+2,BIN_TOP,BW-4,FLOOR-BIN_TOP);
+    glyph(g,f,x+BW/2,BIN_TOP+40,40,FAMC[f]);g.fillStyle="#FFF4D2";g.font="700 22px Oswald, sans-serif";g.textAlign="center";g.fillText(S.vals[i],x+BW/2,FLOOR-22)}
+  g.strokeStyle="#E4BD58";g.lineWidth=4;S.board.segs.slice(5).forEach(s=>{g.beginPath();g.moveTo(s[0],s[1]);g.lineTo(s[2],s[3]);g.stroke()});
+  g.fillStyle="#E4BD58";S.board.posts.forEach(p=>{g.beginPath();g.arc(p.x,p.y,p.r,0,Math.PI*2);g.fill()});
+  // pegs
+  S.board.pegs.forEach(p=>{g.fillStyle="#E4BD58";g.beginPath();g.arc(p.x,p.y,p.r,0,Math.PI*2);g.fill();g.fillStyle="rgba(255,244,210,.7)";g.beginPath();g.arc(p.x-1.5,p.y-1.5,2,0,Math.PI*2);g.fill()});
+  // rotors
+  S.board.rot.forEach(r=>{g.strokeStyle="#E4BD58";g.lineWidth=7;g.lineCap="round";for(let k2=0;k2<5;k2++){const a=S.ang*r.dir+k2*Math.PI*2/5,ex=r.x+Math.cos(a)*r.len,ey=r.y+Math.sin(a)*r.len;g.beginPath();g.moveTo(r.x,r.y);g.lineTo(ex,ey);g.stroke();g.fillStyle="#53D6BC";g.beginPath();g.arc(ex,ey,7,0,Math.PI*2);g.fill()}
+    g.fillStyle="#243E67";g.beginPath();g.arc(r.x,r.y,13,0,Math.PI*2);g.fill();g.strokeStyle="#E4BD58";g.lineWidth=3;g.stroke()});
+  // launcher
+  if(!S.orb&&S.left>0){g.setLineDash([4,8]);g.strokeStyle="rgba(83,214,188,.45)";g.lineWidth=2;g.beginPath();g.moveTo(S.lx,160);g.lineTo(S.lx,300);g.stroke();g.setLineDash([]);
+    g.fillStyle="#53D6BC";g.beginPath();g.arc(S.lx,150,OR,0,Math.PI*2);g.fill()}
+  g.fillStyle="#E4BD58";g.beginPath();g.moveTo(S.lx-12,128);g.lineTo(S.lx+12,128);g.lineTo(S.lx,140);g.closePath();g.fill();
+  // orb
+  if(S.orb&&!S.orb.done){const o=S.orb,gr=g.createRadialGradient(o.x-3,o.y-3,1,o.x,o.y,OR*2.2);gr.addColorStop(0,"#ffffff");gr.addColorStop(.35,"#9ff3e2");gr.addColorStop(.6,"rgba(83,214,188,.45)");gr.addColorStop(1,"rgba(83,214,188,0)");g.fillStyle=gr;g.beginPath();g.arc(o.x,o.y,OR*2.2,0,Math.PI*2);g.fill()}
+  // floating texts
+  S.fx=S.fx.filter(f=>f.t<1.2);S.fx.forEach(f=>{f.t+=1/60;g.globalAlpha=Math.max(0,1-f.t/1.2);g.fillStyle=f.c;g.font="700 30px Oswald, sans-serif";g.textAlign="center";g.lineWidth=5;g.strokeStyle="#060504";g.strokeText(f.txt,f.x,f.y-f.t*40);g.fillText(f.txt,f.x,f.y-f.t*40);g.globalAlpha=1});
+  // HUD in board
+  g.fillStyle="#FFF4D2";g.font="400 16px 'Space Mono', monospace";g.textAlign="left";g.fillText("ORBES "+S.left,WL+20,FLOOR+30);g.textAlign="right";g.fillText(S.score+" PTS",WR-20,FLOOR+30);
+}
+/* ---- result, points & lots ---- */
+function orbReward(){
+  const gain=Math.round(S.score*(orbCfg.ptsRate||0)/100);
+  let won=null;
+  const already=new Set((me.wins||[]).map(w=>w.lotId));
+  const lots=shuffle((orbCfg.lots||[]).filter(l=>l.active!==false&&S.score>=(+l.minScore||0)&&lotRemaining(l)>0&&!already.has(l.id)));
+  for(const l of lots){if(Math.random()*100<(+l.chance||0)){won=l;break}}
+  return {gain,won};
+}
+
 /* =================== END =================== */
 const ENDTXT={
  mem:r=>r===1?"Mémoire en or. Rien ne t'échappe.":r>=.75?"Très concentré. Presque parfait.":r>=.5?"Pas mal. Les pièges ont marché sur toi.":r>=.25?"Ma liste t'a eu. Reviens plus concentré.":"Piégé ! Remets le morceau et retente.",
@@ -1432,6 +1642,7 @@ const ENDTXT={
  obj:r=>r===1?"5/5. Rien ne t'échappe, même en désordre.":r>=.6?"Bon œil. Un objet t'a filé entre les doigts.":r>=.4?"Les objets ont bougé, ta mémoire aussi.":"Les objets ont gagné. Retente, concentré.",
  pau:r=>r===1?"12/12. Des réflexes en or.":r>=.75?"Gros réflexes. Quelques images t'ont échappé.":r>=.4?"Le timing est là, il manque la précision.":"La pochette t'a filé entre les doigts. Respire et retente.",
  ang:r=>r===1?"5/5. Tu vois les mots avant tout le monde.":r>=.6?"Bon angle. Quelques sculptures t'ont résisté.":r>=.4?"Il t'a fallu le bon angle pour voir.":"Les sculptures ont gardé leur secret. Retente.",
+ orb:r=>r===1?"Toutes les orbes au temple. Belle main.":r>=.7?"Le temple t'a souri.":r>=.4?"Quelques orbes se sont perdues.":"Le Nil a gardé tes orbes. Reviens demain.",
  son:r=>r===1?"Sans faute. Ton oreille marche aussi à l'envers.":r>=.6?"Belle oreille. Un son t'a résisté.":r>=.3?"Le cerveau a du mal à l'envers, c'est normal.":"À l'envers, tout se brouille. Retente."
 };
 const SHARE={
@@ -1440,9 +1651,10 @@ const SHARE={
  obj:"au défi « Un objet a disparu » 👀 Concentré — Edalam #Concentré #Edalam #JeuDeMemoire #MemoireVisuelle #DefiVisuel",
  pau:"au défi « Pause au bon moment » ⏸ Concentré — Edalam #Concentré #Edalam #DefiReflexe #JeuDeConcentration #DefiVisuel",
  ang:"au défi « Tout est une question d'angle » 🔍 Concentré — Edalam #Concentré #Edalam #IllusionOptique #Anamorphose #DefiVisuel",
+ orb:"au bonus « Les Orbes du Nil » 🔆 Concentré — Edalam #Concentré #Edalam #OrbesDuNil #BonusDuJour #JeuDeConcentration",
  son:"au défi « Sons à l'envers » 🔊 Concentré — Edalam #Concentré #Edalam #SonsALEnvers #DefiAudio #JeuDeConcentration"
 };
-const modeMax=m=>m==="son"?(S&&S.mode==="son"?S.planned:sonsMax()):MAXS[m];
+const modeMax=m=>m==="son"?(S&&S.mode==="son"?S.planned:sonsMax()):m==="orb"?(S&&S.mode==="orb"?S.total:orbCfg.orbs):MAXS[m];
 function finish(){
   clearAll();stopBuf();show("end");
   const max=modeMax(S.mode),r=S.ok/max,m=MODES.find(x=>x.id===S.mode);
@@ -1451,8 +1663,18 @@ function finish(){
   $("#rank").textContent=ENDTXT[S.mode](r);
   $("#recap").innerHTML=S.results.map((g,i)=>`<i class="${g?"y":""}" title="${i+1}">${i+1}</i>`).join("");
   $("#ep").textContent=S.score;$("#es").textContent=S.maxStreak;$("#eb").textContent="…";
-  $("#sharetxt").hidden=true;$("#share").textContent="Copier mon score";pulse=1;
+  $("#sharetxt").hidden=true;$("#share").textContent="Copier mon score";pulse=1;$("#again").textContent="Rejouer";
   let extra=null;
+  $("#bonusBox").hidden=true;
+  if(S.mode==="orb"){const {gain,won}=orbReward(),d=today(),od=me.orbDay&&me.orbDay.d===d?me.orbDay:{d,plays:0,best:0},wins=(me.wins||[]).slice();
+    if(won)wins.push({lotId:won.id,name:won.name,at:Date.now(),day:d,score:S.score,status:"à remettre"});
+    extra={patch:{orbDay:{d,plays:(od.plays||0)+1,best:Math.max(od.best||0,S.score)},bonusPoints:(me.bonusPoints||0)+gain}};if(won)extra.patch.wins=wins;
+    const bx=$("#bonusBox");bx.hidden=false;
+    bx.innerHTML=`<span>+<b>${gain}</b> Points Concentré · total <b>${(me.bonusPoints||0)+gain}</b></span><span>${S.center} orbe${S.center>1?"s":""} au Soleil · meilleur bonus de série ${S.bestBonus}</span>`
+      +(won?`<span class="eyebrow" style="color:#53D6BC">Lot gagné</span><span class="lotwin">${esc(won.name)}</span>${won.desc?`<span>${esc(won.desc)}</span>`:""}<span>L'organisateur te contactera avec l'email de ton inscription.</span>`:"")
+      +`<div id="templeBox">${templeHtml()}</div>`;
+    if(won)setTimeout(()=>{sfx.good();setTimeout(()=>sfx.good(),220)},300);
+  }
   if(S.mode==="son"){const old=me.sonsStats||{},st={};Object.entries(S.stats).forEach(([id,v])=>{const o=old[id]||{};st[id]={n:(o.n||0)+1,ok:(o.ok||0)+(v.good?1:0)}});extra={sonsStats:st,bestSonMaxCur:max}}
   saveResult(S.mode,S.ok,max,S.score,extra);
 }
@@ -1515,7 +1737,7 @@ function renderAdmin(){
   $("#aModes").innerHTML=`<table class="mini-t"><thead><tr><th>Défi</th><th class="n">Parties</th><th class="n">Joueurs</th><th class="n">Record moyen</th><th class="n">Meilleur</th></tr></thead><tbody>${MODES.map(m=>{const k=KEY[m.id],v=ps.filter(p=>p[k]>0);const avg=v.length?(v.reduce((a,p)=>a+p[k],0)/v.length).toFixed(1).replace(".",","):"–";const best=ranked(m.id)[0];return `<tr><td>${m.name}</td><td class="n">${byMode[m.id]||0}</td><td class="n">${v.length}</td><td class="n">${avg}</td><td class="n">${best?esc(best.pseudo)+" · "+best[k+"Pts"]:"–"}</td></tr>`}).join("")}</tbody></table>`;
   const feed=[];ps.forEach(p=>(p.history||[]).forEach(h=>feed.push({...h,pseudo:p.pseudo})));feed.sort((a,b)=>b.at-a.at);
   $("#aFeed").innerHTML=feed.length?feed.slice(0,15).map(h=>`<li><span><b>${esc(h.pseudo)}</b> · ${MLABEL[h.m]||h.m} ${h.ok}/${h.max} · ${h.pts} pts</span><span>${fmtDT(h.at)}</span></li>`).join(""):`<li class="empty" style="display:block">Aucune partie pour l'instant.</li>`;
-  renderHead();renderRows();renderSonsTable();
+  renderHead();renderRows();renderSonsTable();if(adminPane==="ob")renderWins();
 }
 function renderRows(){
   const q=($("#aSearch").value||"").toLowerCase().trim();
@@ -1544,10 +1766,10 @@ $("#aRows").onclick=async e=>{
   }
 };
 $("#aExport").onclick=async()=>{
-  const rows=rowsData();const head=["pseudo","ville","email","newsletter","inscrit_le","parties"].concat(...MODES.map(m=>["record_"+m.short.toLowerCase(),"points_"+m.short.toLowerCase()]),["derniere_partie","statut"]);
+  const rows=rowsData();const head=["pseudo","ville","email","newsletter","inscrit_le","parties"].concat(...MODES.map(m=>["record_"+m.short.toLowerCase(),"points_"+m.short.toLowerCase()]),["points_concentre","lots_gagnes","derniere_partie","statut"]);
   const q=v=>`"${String(v==null?"":v).replace(/"/g,'""')}"`;
   const iso=t=>t?new Date(t).toISOString():"";
-  const csv="﻿"+[head.join(";")].concat(rows.map(p=>[p.pseudo,p.ville,p.email,p.newsletter?"oui":"non",iso(p.createdAt),p.games||0].concat(...MODES.map(m=>[p[KEY[m.id]]||0,p[KEY[m.id]+"Pts"]||0]),[iso(p.lastAt),p.isBanned?"suspendu":"actif"]).map(q).join(";"))).join("\n");
+  const csv="﻿"+[head.join(";")].concat(rows.map(p=>[p.pseudo,p.ville,p.email,p.newsletter?"oui":"non",iso(p.createdAt),p.games||0].concat(...MODES.map(m=>[p[KEY[m.id]]||0,p[KEY[m.id]+"Pts"]||0]),[p.bonusPoints||0,(p.wins||[]).map(w=>w.name).join(" / "),iso(p.lastAt),p.isBanned?"suspendu":"actif"]).map(q).join(";"))).join("\n");
   if(!downloads){toast("Export indisponible ici");return}
   try{await downloads.save({filename:"joueurs-concentre.csv",data:new Blob([csv],{type:"text/csv"})})}catch(e){if(e&&e.code!=="declined")toast("Export impossible")}
 };
@@ -1662,6 +1884,60 @@ async function seedSounds(){
 }
 $("#seedBtn").onclick=seedSounds;
 fetch("seed/sounds.json",{method:"HEAD"}).then(r=>{if(r.ok)$("#seedRow").hidden=false}).catch(()=>{});
+/* ---- Admin : Orbes du Nil (bonus du jour, points, lots) ---- */
+const ORB_SCHEMA=[
+ {k:"playsPerDay",l:"Parties par jour et par joueur",t:"num",min:1,max:20},
+ {k:"orbs",l:"Orbes par partie",t:"num",min:3,max:20},
+ {k:"ptsRate",l:"Points Concentré gagnés",t:"num",min:0,max:100,h:"pour 100 pts de score"},
+ {k:"bins",l:"Valeur des 7 réceptacles",t:"text",h:"de gauche à droite, séparées par des virgules"},
+ {k:"combo2",l:"Bonus série de 2",t:"num",min:0,max:5000},
+ {k:"combo3",l:"Bonus série de 3",t:"num",min:0,max:5000},
+ {k:"gravity",l:"Gravité",t:"num",min:300,max:2000},
+ {k:"restitution",l:"Rebond",t:"range",min:.2,max:.9,step:.05,f:v=>(+v).toFixed(2).replace(".",",")},
+ {k:"rotorSpeed",l:"Vitesse des roues (rad/s)",t:"range",min:0,max:2.5,step:.1,f:v=>(+v).toFixed(1).replace(".",",")},
+ {k:"timeout",l:"Orbe perdue après (s)",t:"num",min:5,max:40},
+ {k:"adminUnlimited",l:"Parties illimitées pour les admins",t:"bool"}
+];
+function schemaHtml(schema,vals,pre){return schema.map(f=>{const v=vals[f.k],id=pre+f.k;
+  if(f.t==="bool")return `<label class="setf b" for="${id}"><span>${f.l}</span><input type="checkbox" id="${id}" ${v?"checked":""}></label>`;
+  if(f.t==="range")return `<label class="setf" for="${id}"><span>${f.l} <b id="${id}_v">${f.f(v)}</b></span><input type="range" id="${id}" min="${f.min}" max="${f.max}" step="${f.step}" value="${v}"></label>`;
+  if(f.t==="text")return `<label class="setf" for="${id}"><span>${f.l}${f.h?` <small>${f.h}</small>`:""}</span><input type="text" id="${id}" value="${esc(v)}"></label>`;
+  return `<label class="setf" for="${id}"><span>${f.l}${f.h?` <small>${f.h}</small>`:""}</span><input type="number" id="${id}" min="${f.min}" max="${f.max}" value="${v}"></label>`}).join("")}
+function schemaRead(schema,pre,defs){const o={};for(const f of schema){const el=$("#"+pre+f.k);if(f.t==="bool")o[f.k]=el.checked;else if(f.t==="text")o[f.k]=el.value.trim();else{let n=+el.value;if(!isFinite(n))n=defs[f.k];o[f.k]=Math.max(f.min,Math.min(f.max,n))}}return o}
+let lotsDraft=null;
+function fillOrb(){
+  $("#orbSet").innerHTML=schemaHtml(ORB_SCHEMA,orbCfg,"ob_");
+  ORB_SCHEMA.filter(f=>f.t==="range").forEach(f=>{$("#ob_"+f.k).oninput=e=>{$("#ob_"+f.k+"_v").textContent=f.f(e.target.value)}});
+  lotsDraft=JSON.parse(JSON.stringify(orbCfg.lots||[]));renderLots();renderWins();
+}
+function renderLots(){
+  $("#lotRows").innerHTML=lotsDraft.length?lotsDraft.map((l,i)=>`<tr data-i="${i}">
+    <td><input type="text" data-f="name" value="${esc(l.name)}" placeholder="ex. Vinyle dédicacé" aria-label="Nom du lot"></td>
+    <td><input type="text" data-f="desc" value="${esc(l.desc||"")}" placeholder="détail affiché au gagnant" aria-label="Description"></td>
+    <td><input type="number" data-f="minScore" value="${l.minScore||0}" min="0" aria-label="Score minimum"></td>
+    <td><input type="number" data-f="chance" value="${l.chance||0}" min="0" max="100" step="0.5" aria-label="Chance en pourcentage"></td>
+    <td><input type="number" data-f="stock" value="${l.stock||0}" min="0" aria-label="Stock"></td>
+    <td class="n">${lotRemaining(l)}</td>
+    <td><input type="checkbox" data-f="active" ${l.active!==false?"checked":""} aria-label="Actif"></td>
+    <td><button class="sbtn sm dng" data-a="rm" type="button">Retirer</button></td></tr>`).join(""):`<tr><td colspan="8" class="empty">Aucun lot. Ajoute un lot pour que les meilleurs scores puissent gagner.</td></tr>`;
+}
+$("#lotRows").oninput=e=>{const tr=e.target.closest("tr[data-i]");if(!tr)return;const l=lotsDraft[+tr.dataset.i],f=e.target.dataset.f;if(!f)return;l[f]=e.target.type==="checkbox"?e.target.checked:e.target.type==="number"?+e.target.value:e.target.value};
+$("#lotRows").onclick=e=>{const b=e.target.closest("button[data-a=rm]");if(!b)return;lotsDraft.splice(+b.closest("tr").dataset.i,1);renderLots()};
+$("#lotAdd").onclick=()=>{lotsDraft.push({id:"lot-"+Date.now().toString(36),name:"",desc:"",minScore:2000,chance:10,stock:1,active:true});renderLots()};
+async function saveOrbCfg(patch){try{await db.doc("config/orbes").set({...orbCfg,...patch});toast("Bonus du jour enregistré");return true}catch(e){toast("Échec de l'enregistrement");return false}}
+$("#orbSave").onclick=()=>{const o=schemaRead(ORB_SCHEMA,"ob_",DEFAULT_ORB);const v=String(o.bins).split(/[,; ]+/).map(Number).filter(n=>isFinite(n));if(v.length!==7){toast("Il faut 7 valeurs de réceptacles");return}o.bins=v.join(",");saveOrbCfg(o)};
+$("#lotSave").onclick=()=>{const bad=lotsDraft.findIndex(l=>!String(l.name||"").trim());if(bad>-1){toast("Donne un nom à chaque lot");return}saveOrbCfg({lots:lotsDraft.map(l=>({...l,name:String(l.name).trim(),chance:Math.max(0,Math.min(100,+l.chance||0)),stock:Math.max(0,Math.round(+l.stock||0)),minScore:Math.max(0,Math.round(+l.minScore||0))}))})};
+function renderWins(){
+  const w=allWins();
+  $("#winRows").innerHTML=w.length?w.map(x=>`<tr data-p="${esc(x.pid)}" data-i="${x.idx}"><td>${fmtDT(x.at)}</td><td class="ps">${esc(x.pseudo)}</td><td>${esc((regs[x.pid]||{}).email||"–")}</td><td>${esc(x.name)}</td><td class="n">${x.score}</td>
+    <td>${x.status==="remis"?'<span class="pill on">Remis</span>':'<span class="pill adm">À remettre</span>'}</td>
+    <td><button class="sbtn sm" data-a="st" type="button">${x.status==="remis"?"Annuler":"Marquer remis"}</button></td></tr>`).join(""):`<tr><td colspan="7" class="empty">Aucun lot gagné pour l'instant.</td></tr>`;
+  $("#orbKpi").innerHTML=[["Joueurs aujourd'hui",dailyTop().length?players.filter(p=>p.orbDay&&p.orbDay.d===today()).length:0],["Lots gagnés",w.length],["À remettre",w.filter(x=>x.status!=="remis").length],["Points distribués",players.reduce((a,p)=>a+(p.bonusPoints||0),0)]].map(([l,v])=>`<div><b>${v}</b>${l}</div>`).join("");
+}
+$("#winRows").onclick=async e=>{const b=e.target.closest("button[data-a=st]");if(!b)return;const tr=b.closest("tr"),p=players.find(x=>x.id===tr.dataset.p);if(!p)return;
+  const wins=(p.wins||[]).map(x=>({...x}));const w=wins[+tr.dataset.i];if(!w)return;w.status=w.status==="remis"?"à remettre":"remis";
+  try{await db.doc("players/"+p.id).update({wins});toast(w.status==="remis"?"Lot marqué comme remis":"Statut remis à « à remettre »")}catch(x){toast("Échec")}};
+
 /* =================== Accueil & enregistrement =================== */
 $("#homeChip").onclick=()=>{
   const b=$("#homeChip");
@@ -1719,7 +1995,7 @@ function recShow(blob,dur){
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#recModal").hidden)closeModal()});
 /* admin tabs */
 let adminPane="ov";
-function setPane(p){adminPane=p;document.querySelectorAll("#atabs .tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.p===p));document.querySelectorAll(".apane").forEach(x=>x.hidden=x.dataset.p!==p);if(p==="so"){fillSons();renderSonsTable()}}
+function setPane(p){adminPane=p;if(p==="ob")fillOrb();document.querySelectorAll("#atabs .tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.p===p));document.querySelectorAll(".apane").forEach(x=>x.hidden=x.dataset.p!==p);if(p==="so"){fillSons();renderSonsTable()}}
 $("#atabs").onclick=e=>{const b=e.target.closest(".tab");if(b)setPane(b.dataset.p)};
 
 boot();
